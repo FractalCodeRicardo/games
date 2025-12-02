@@ -1,14 +1,23 @@
-use macroquad::{prelude::*, rand::RandomRange};
+mod consts;
+mod sprites;
 
-const BLOCK_SIZE: f32 = 25.;
-const STEP: f32 = 3.;
+use macroquad::{prelude::*, rand::RandomRange, texture};
+
+use crate::{consts::{BLOCK_SIZE, PLAYER_SIZE, STEP}, sprites::Enemy};
+
+//TODO:
+//1. Refactor loops on maps
+//2. Fix block size (wall, enemy, player)
+//3. Add sprite to the player
+//4. Add sprite to the enemies
+//5. Add sprite to food
 
 fn get_map() -> Vec<String> {
     let map = vec![
         "############################",
         "#  p  *  *    *  x  *      #",
-        "# ###### ######### #######*#",
-        "# ###### ######### ####### #",
+        "#         #######  ###### *#",
+        "#  ####   #######  ######  #",
         "# *  * * x  x   *     *   *#",
         "# ### ##### #### #### #### #",
         "# ### ##### #### #### #### #",
@@ -34,23 +43,37 @@ fn get_map() -> Vec<String> {
     return map;
 }
 
-fn get_player(map: &Vec<String>) -> Rect {
-    let mut player = Rect::new(0.0, 0., BLOCK_SIZE, BLOCK_SIZE);
+fn iter_map(map: &Vec<String>) -> Vec<(usize, usize, char)> {
+    let mut items = vec![];
 
     for j in 0..map.len() {
         let line = &map[j];
         for i in 0..line.len() {
             let c = line.chars().nth(i).unwrap();
 
-            if c == 'p' {
-                let rect = Rect::new(
-                    i as f32 * BLOCK_SIZE,
-                    j as f32 * BLOCK_SIZE,
-                    BLOCK_SIZE - 10.,
-                    BLOCK_SIZE - 10.,
-                );
-                player = rect;
-            }
+            items.push((i, j, c));
+        }
+    }
+
+    items
+}
+
+fn get_player(map: &Vec<String>) -> Rect {
+    let mut player = Rect::new(0.0, 0., BLOCK_SIZE, BLOCK_SIZE);
+
+    for e in iter_map(map) {
+        let c = e.2;
+        let i = e.0;
+        let j = e.1;
+
+        if c == 'p' {
+            let rect = Rect::new(
+                i as f32 * BLOCK_SIZE,
+                j as f32 * BLOCK_SIZE,
+                PLAYER_SIZE,
+                PLAYER_SIZE,
+            );
+            player = rect;
         }
     }
 
@@ -59,44 +82,38 @@ fn get_player(map: &Vec<String>) -> Rect {
 
 fn get_food(map: &Vec<String>) -> Vec<Rect> {
     let mut food = vec![];
-    for j in 0..map.len() {
-        let line = &map[j];
-        for i in 0..line.len() {
-            let c = line.chars().nth(i).unwrap();
 
-            if c == '*' {
-                let rect = Rect::new(
-                    i as f32 * BLOCK_SIZE,
-                    j as f32 * BLOCK_SIZE,
-                    BLOCK_SIZE - 20.,
-                    BLOCK_SIZE - 20.,
-                );
+    for e in iter_map(map) {
+        let c = e.2;
+        let i = e.0;
+        let j = e.1;
 
-                food.push(rect);
-            }
+        if c == '*' {
+            let rect = Rect::new(
+                i as f32 * BLOCK_SIZE,
+                j as f32 * BLOCK_SIZE,
+                BLOCK_SIZE - 20.,
+                BLOCK_SIZE - 20.,
+            );
+
+            food.push(rect);
         }
     }
 
     food
 }
 
-fn get_enemies(map: &Vec<String>) -> Vec<Rect> {
+fn get_enemies(map: &Vec<String>) -> Vec<Enemy> {
     let mut enemies = vec![];
-    for j in 0..map.len() {
-        let line = &map[j];
-        for i in 0..line.len() {
-            let c = line.chars().nth(i).unwrap();
+    for e in iter_map(map) {
+        let c = e.2;
+        let i = e.0;
+        let j = e.1;
 
-            if c == 'x' {
-                let rect = Rect::new(
-                    i as f32 * BLOCK_SIZE,
-                    j as f32 * BLOCK_SIZE,
-                    BLOCK_SIZE - 10.,
-                    BLOCK_SIZE - 10.,
-                );
+        if c == 'x' {
 
-                enemies.push(rect);
-            }
+            let enemy = Enemy::new(i, j);
+            enemies.push(enemy);
         }
     }
 
@@ -105,21 +122,20 @@ fn get_enemies(map: &Vec<String>) -> Vec<Rect> {
 
 fn get_blocks(map: &Vec<String>) -> Vec<Rect> {
     let mut blocks = vec![];
-    for j in 0..map.len() {
-        let line = &map[j];
-        for i in 0..line.len() {
-            let c = line.chars().nth(i).unwrap();
+    for e in iter_map(map) {
+        let c = e.2;
+        let i = e.0;
+        let j = e.1;
 
-            if c == '#' {
-                let rect = Rect::new(
-                    i as f32 * BLOCK_SIZE,
-                    j as f32 * BLOCK_SIZE,
-                    BLOCK_SIZE,
-                    BLOCK_SIZE,
-                );
+        if c == '#' {
+            let rect = Rect::new(
+                i as f32 * BLOCK_SIZE,
+                j as f32 * BLOCK_SIZE,
+                BLOCK_SIZE,
+                BLOCK_SIZE,
+            );
 
-                blocks.push(rect);
-            }
+            blocks.push(rect);
         }
     }
 
@@ -142,6 +158,13 @@ fn draw_cirs(rects: &Vec<Rect>, color: Color) {
     }
 }
 
+
+fn draw_enemies(enemies: &mut Vec<Enemy>, textures: &Texture2D) {
+    for enemy in enemies {
+        enemy.draw_enemy(textures);
+    }
+}
+
 fn draw_cir(rect: &Rect, color: Color) {
     draw_circle(
         rect.x + BLOCK_SIZE / 2.,
@@ -149,6 +172,35 @@ fn draw_cir(rect: &Rect, color: Color) {
         rect.w / 2.,
         color,
     );
+}
+
+
+fn draw_player(rect: &Rect, 
+    texture: &Texture2D, open: bool) {
+        let frame = if open  {
+            0.
+        } else {
+            1.
+        };
+
+        let area = Rect::new(
+            frame * 230.,
+            270.,
+            230.,
+            250.,
+        );
+
+        draw_texture_ex(
+            &texture,
+            rect.x,
+            rect.y,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(rect.w, rect.h)),
+                source: Some(area),
+                ..Default::default()
+            },
+        );
 }
 
 fn mov_left(rect: &Rect) -> Rect {
@@ -167,28 +219,11 @@ fn mov_down(rect: &Rect) -> Rect {
     Rect::new(rect.x, rect.y + STEP, rect.w, rect.h)
 }
 
-fn random_mov(rect: &Rect) -> Rect {
-    let movs = vec![
-        vec2(STEP, 0.),
-        vec2(-STEP, 0.),
-        vec2(0., STEP),
-        vec2(0., -STEP),
-    ];
-
-    let m = movs[RandomRange::gen_range(0, 4)];
-
-    return Rect::new(
-        rect.x + m.x,
-        rect.y + m.y, 
-        rect.w, rect.h
-    );
-}
 
 fn collides_blocks(player: &Rect, blocks: &Vec<Rect>) -> bool {
     let res = collided_index(player, blocks);
-     return res != -1;
+    return res != -1;
 }
-
 
 fn collided_index(player: &Rect, blocks: &Vec<Rect>) -> i32 {
     let p1 = vec2(player.x, player.y);
@@ -207,32 +242,43 @@ fn collided_index(player: &Rect, blocks: &Vec<Rect>) -> i32 {
 
 fn draw_score(score: i32) {
     let text = format!("SCORE: {}", score);
-    draw_text(&text, 10., screen_height() -20., 40., WHITE);
+    draw_text(&text, 10., screen_height() - 20., 40., WHITE);
 }
 
-
 fn draw_game_over() {
-    let text ="GAME OVER";
-    draw_text(&text, screen_width() - 300., screen_height() -20., 40., RED);
+    let text = "GAME OVER";
+    draw_text(
+        &text,
+        screen_width() - 300.,
+        screen_height() - 20.,
+        40.,
+        RED,
+    );
 }
 
 #[macroquad::main("MyGame")]
 async fn main() {
+    let textures = load_texture("./assets/sprites.png")
+        .await
+        .unwrap();
+
     let map = get_map();
     let blocks = get_blocks(&map);
     let mut player = get_player(&map);
     let mut enemies = get_enemies(&map);
     let mut food = get_food(&map);
     let mut score = 0;
-    let mut game_over =  false;
+    let mut game_over = false;
+    let mut open_mouth = false;
+    let mut time = 0.;
 
     loop {
         clear_background(BLACK);
 
         draw_rects(&blocks);
-        draw_cir(&player, YELLOW);
+        draw_player(&player, &textures, open_mouth);
         draw_cirs(&food, WHITE);
-        draw_cirs(&enemies, RED);
+        draw_enemies(&mut enemies,  &textures);
         draw_score(score);
 
         let mut next_player = player;
@@ -265,7 +311,11 @@ async fn main() {
             score += 1;
         }
 
-        let i_enemy = collided_index(&player, &enemies);
+        let enemies_blocks = enemies
+            .iter().map(|i| i.rect)
+            .collect();
+
+        let i_enemy = collided_index(&player, &enemies_blocks);
 
         if i_enemy > -1 {
             draw_game_over();
@@ -273,12 +323,26 @@ async fn main() {
         }
 
         for e in &mut enemies {
-            let ne = random_mov(&e);
+            let mut ne = e.next_mov();
 
-            if !collides_blocks(&ne, &blocks) {
-                *e = ne;
+            while true {
+                if !collides_blocks(&ne, &blocks) {
+                    break;
+                }
+
+                e.change_dir();
+                ne = e.next_mov();
             }
+
+           e.change_rect(ne);
         }
+
+        if time > 0.5 {
+            time = 0.;
+            open_mouth = !open_mouth;
+        }
+
+        time += get_frame_time();
 
         next_frame().await
     }
