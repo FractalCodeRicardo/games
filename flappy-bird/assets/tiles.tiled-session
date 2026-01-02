@@ -1,0 +1,61 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "map.json",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Background.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map.json": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 807,
+                "y": 212
+            }
+        },
+        "map.json#tiles": {
+            "scaleInDock": 1
+        },
+        "map.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 155,
+                "y": 212
+            }
+        },
+        "map.tmx#tiles": {
+            "scaleInDock": 1
+        },
+        "tiles.tsx": {
+            "scaleInDock": 1
+        }
+    },
+    "last.imagePath": "/home/ricardo/dev/flappy-bird/assets",
+    "map.fixedSize": true,
+    "map.height": 8,
+    "map.lastUsedFormat": "json",
+    "map.width": 150,
+    "openFiles": [
+        "map.json"
+    ],
+    "project": "tiles.tiled-project",
+    "recentFiles": [
+        "map.json",
+        "map.tmx",
+        "Background.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx"
+}
