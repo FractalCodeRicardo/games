@@ -1,0 +1,17 @@
+[package]
+name = "world-domination"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies.macroquad]
+version = "0.4.14"
+features = [
+    "audio",
+]
+
+[dependencies.uuid]
+version = "1.18.1"
+# Lets you generate random UUIDs
+features = [
+    "v4",
+]
