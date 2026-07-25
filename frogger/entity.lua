@@ -35,11 +35,11 @@ end
 
 function Entity:move_to_direction(dt)
   if (self.d > 0 and self.x > Constants.WIDTH) then
-    self.x = 0
+    self.x = Constants.SPRITE_SIZE * self.w * -1;
     return
   end
 
-  if (self.d < 0 and self.x < 0) then
+  if (self.d < 0 and self.x + self.w * Constants.SPRITE_SIZE < 0) then
     self.x = Constants.WIDTH
     return
   end

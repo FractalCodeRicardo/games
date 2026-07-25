@@ -23,32 +23,67 @@ function _init()
   local trunks = Trunk.create_trunks();
   local turtles = Turtles.create_turtles()
 
-  local entities = {}
-  table.insert(entities, frog)
-  AppendAll(entities, cars)
-  AppendAll(entities, trunks)
-  AppendAll(entities, turtles)
+  local obstacles = {}
+  AppendAll(obstacles, cars)
+
+  local floats = {}
+  AppendAll(floats, trunks)
+  AppendAll(floats, turtles)
 
   State = {
     map = Map,
     frog = frog,
     cars = cars,
-    entities = entities
+    obstacles = obstacles,
+    floats = floats
   }
 end
 
+local function update_entities(entities, dt)
+  for i = 1, #entities do
+    entities[i]:update(dt)
+  end
+end
+
+local function draw_entities(entities, dt)
+  for i = 1, #entities do
+    entities[i]:draw(dt)
+  end
+end
+
 function _update(dt)
-    for i = 1, #State.entities do
-      State.entities[i]:update(dt)
-    end
+  local obstacles = State.obstacles
+  local floats = State.floats
+  local frog = State.frog
+
+  update_entities(obstacles, dt)
+  update_entities(floats, dt)
+
+  frog:update(dt)
+
+  if CollidesWith(frog, obstacles) then
+    frog:die()
+  end
+
+  local float = GetCollidedEntity(frog, floats)
+  if float ~= nil then
+    frog.d = float.d
+    frog.s = float.s
+    frog:move_to_direction(dt)
+    frog.d = 0
+    frog.s = 0
+  end
+
 end
 
 function _draw(dt)
   gfx.clear(gfx.COLOR_BLACK)
 
+  local obstacles = State.obstacles
+  local floats = State.floats
+  local frog = State.frog
   State.map:draw()
-  for i = 1, #State.entities do
-    State.entities[i]:draw(dt)
-  end
-
+  draw_entities(obstacles, dt)
+  draw_entities(floats, dt)
+  State.frog:draw()
 end

@@ -29,6 +29,10 @@ function Frog:handleKeys()
 end
 
 function Frog:update()
+  if (self.is_death) then
+    return
+  end
+
   self:handleKeys()
 end
 
@@ -38,8 +42,13 @@ function Frog.create_frog()
   local y = Constants.HEIGHT - Constants.SPRITE_SIZE ;
 
   local frog = Frog:new({x = x, y = y, sprite = 15})
+  frog.is_death = false;
   return frog
 end
 
+function Frog:die()
+  self.is_death = true
+  self.sprite = 21
+end
 
 return Frog
