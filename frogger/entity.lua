@@ -58,7 +58,11 @@ function Entity:draw()
 end
 
 function Entity:draw_sprite()
- gfx.spr(self.sprite, self.x, self.y)
+  for i=1, self.w do
+    local j = i -1
+    local x = self.x + (j* Constants.SPRITE_SIZE)
+    gfx.spr(self.sprite + j, x, self.y)
+  end
 end
 
 function Entity:draw_rect()

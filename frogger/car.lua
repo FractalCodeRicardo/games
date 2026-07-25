@@ -5,8 +5,6 @@ local Entity = require("entity")
 local Car = setmetatable({}, { __index = Entity })
 Car.__index = Car
 
-
-
 function Car:update(dt)
   self:move_to_direction(dt)
 end
@@ -75,6 +73,20 @@ function Car.create_cars()
 
   table.insert(cars, Car:new(Clone(defaults, {
     x = defaults.x * 0.50
+  })))
+
+
+  -- 5 row
+  defaults.y = Constants.HEIGHT - 6 * size
+  defaults.d = 1
+  defaults.sprite = 8
+
+  table.insert(cars, Car:new(Clone(defaults, {
+    x = defaults.x * 0.30
+  })))
+
+  table.insert(cars, Car:new(Clone(defaults, {
+    x = defaults.x * 0.60
   })))
 
   return cars
