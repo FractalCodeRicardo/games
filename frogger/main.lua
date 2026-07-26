@@ -4,7 +4,7 @@ local Constants = require("constants")
 local Map = require("map")
 local Trunk = require("trunk")
 local Turtles = require("turtles")
-
+local Menu = require("menu")
 require("utils")
 
 function _config()
@@ -30,7 +30,12 @@ function _init()
   AppendAll(floats, trunks)
   AppendAll(floats, turtles)
 
+  Menu.on_start = function ()
+   State.screen = "game" 
+  end
+
   State = {
+    screen = "menu",
     map = Map,
     frog = frog,
     cars = cars,
@@ -51,7 +56,11 @@ local function draw_entities(entities, dt)
   end
 end
 
-function _update(dt)
+local function update_menu()
+  Menu.update()
+end
+
+local function update_game(dt)
   local obstacles = State.obstacles
   local floats = State.floats
   local frog = State.frog
@@ -73,12 +82,25 @@ function _update(dt)
     frog.d = 0
     frog.s = 0
   end
+end
+
+function _update(dt)
+  if State.screen == "menu" then
+    update_menu()
+    return
+  end
+
+  if State.screen == "game" then
+    update_game(dt)
+  end
 
 end
 
-function _draw(dt)
-  gfx.clear(gfx.COLOR_BLACK)
+local function draw_menu()
+  Menu.draw()
+end
 
+local function draw_game(dt)
   local obstacles = State.obstacles
   local floats = State.floats
   local frog = State.frog
@@ -86,4 +108,17 @@ function _draw(dt)
   draw_entities(obstacles, dt)
   draw_entities(floats, dt)
   State.frog:draw()
+end
+
+function _draw(dt)
+  gfx.clear(gfx.COLOR_BLACK)
+
+  if State.screen == "menu" then
+    draw_menu()
+    return
+  end
+
+  if State.screen == "game" then
+    draw_game(dt)
+  end
 end

@@ -1,5 +1,6 @@
 local Constants = require("constants")
 local Entity = require("entity")
+local Sprites =  require("sprites")
 
 local Frog = setmetatable({},{__index = Entity})
 Frog.__index = Frog;
@@ -9,22 +10,22 @@ function Frog:handleKeys()
   local size = Constants.SPRITE_SIZE
   if (input.key_pressed(input.KEY_J)) then
    self:move(0, size)
-   self.sprite = 16
+   self.sprite = Sprites.Frog1
   end
 
   if (input.key_pressed(input.KEY_K)) then
    self:move(0, -size)
-   self.sprite = 15
+   self.sprite = Sprites.Frog1
   end
 
   if (input.key_pressed(input.KEY_H)) then
    self:move(-size, 0)
-   self.sprite = 17
+   self.sprite = Sprites.Frog1
   end
 
   if (input.key_pressed(input.KEY_L)) then
    self:move(size, 0)
-   self.sprite = 18
+   self.sprite = Sprites.Frog1
   end
 end
 
@@ -43,6 +44,7 @@ function Frog.create_frog()
 
   local frog = Frog:new({x = x, y = y, sprite = 15})
   frog.is_death = false;
+  frog.sprite = Sprites.Frog1
   return frog
 end
 

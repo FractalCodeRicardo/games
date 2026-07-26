@@ -1,4 +1,5 @@
 local constants = require("constants")
+local Sprites =require("sprites")
 local map = {}
 
 local function create_row(value)
@@ -21,19 +22,19 @@ local function create_tiles()
   tiles[1] = create_row(1)
   tiles[constants.SPRITE_HEIGHT] = create_row(1)
 
-  tiles[constants.SPRITE_HEIGHT-1] = create_row(2)
-  tiles[constants.SPRITE_HEIGHT-2] = create_row(2)
-  tiles[constants.SPRITE_HEIGHT-3] = create_row(2)
-  tiles[constants.SPRITE_HEIGHT-4] = create_row(2)
-  tiles[constants.SPRITE_HEIGHT-5] = create_row(2)
+  -- tiles[constants.SPRITE_HEIGHT-1] = create_row()
+  -- tiles[constants.SPRITE_HEIGHT-2] = create_row()
+  -- tiles[constants.SPRITE_HEIGHT-3] = create_row()
+  -- tiles[constants.SPRITE_HEIGHT-4] = create_row()
+  -- tiles[constants.SPRITE_HEIGHT-5] = create_row()
 
   tiles[constants.SPRITE_HEIGHT-6] = create_row(1)
 
-  tiles[constants.SPRITE_HEIGHT-6-1] = create_row(3)
-  tiles[constants.SPRITE_HEIGHT-6-2] = create_row(3)
-  tiles[constants.SPRITE_HEIGHT-6-3] = create_row(3)
-  tiles[constants.SPRITE_HEIGHT-6-4] = create_row(3)
-  tiles[constants.SPRITE_HEIGHT-6-5] = create_row(3)
+  -- tiles[constants.SPRITE_HEIGHT-6-1] = create_row()
+  -- tiles[constants.SPRITE_HEIGHT-6-2] = create_row()
+  -- tiles[constants.SPRITE_HEIGHT-6-3] = create_row()
+  -- tiles[constants.SPRITE_HEIGHT-6-4] = create_row()
+  -- tiles[constants.SPRITE_HEIGHT-6-5] = create_row()
   return tiles
 end
 

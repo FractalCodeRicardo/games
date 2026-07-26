@@ -1,6 +1,7 @@
 require("utils")
 local Constants = require("constants")
 local Entity = require("entity")
+local Sprites = require("sprites")
 
 local Car = setmetatable({}, { __index = Entity })
 Car.__index = Car
@@ -22,7 +23,7 @@ function Car.create_cars()
 
   local cars = {}
   -- First row
-  defaults.sprite = 8
+  defaults.sprite = Sprites.Car1
   table.insert(cars, Car:new(Clone(defaults, {
   })))
 
@@ -37,7 +38,7 @@ function Car.create_cars()
   -- Second row
   defaults.y = Constants.HEIGHT - 3 * size
   defaults.d = 1
-  defaults.sprite = 7
+  defaults.sprite = Sprites.Car1
 
   table.insert(cars, Car:new(Clone(defaults, {
     x = defaults.x * 0.20,
@@ -51,7 +52,7 @@ function Car.create_cars()
   -- Third row
   defaults.y = Constants.HEIGHT - 4 * size
   defaults.d = -1
-  defaults.sprite = 8
+  defaults.sprite = Sprites.Car2
 
   table.insert(cars, Car:new(Clone(defaults, {
     x = defaults.x * 0.30
@@ -69,7 +70,7 @@ function Car.create_cars()
   -- Four row
   defaults.y = Constants.HEIGHT - 5 * size
   defaults.d = 1
-  defaults.sprite = 7
+  defaults.sprite = Sprites.Car3
 
   table.insert(cars, Car:new(Clone(defaults, {
     x = defaults.x * 0.50
@@ -79,7 +80,7 @@ function Car.create_cars()
   -- 5 row
   defaults.y = Constants.HEIGHT - 6 * size
   defaults.d = 1
-  defaults.sprite = 8
+  defaults.sprite = Sprites.Car4
 
   table.insert(cars, Car:new(Clone(defaults, {
     x = defaults.x * 0.30
