@@ -155,11 +155,11 @@ end
 
 function draw_game_over()
   gfx.text_ex("Game Over", 
-  usagi.GAME_W / 2 - 150, 
+  usagi.GAME_W / 2 - 180, 
   usagi.GAME_H / 2 - 100,
-  7,
+  8,
   0,
-           gfx.COLOR_DARK_GREEN, 1)
+  gfx.COLOR_TRUE_WHITE, 1)
 end
   
 
