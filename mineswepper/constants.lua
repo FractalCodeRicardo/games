@@ -2,6 +2,7 @@ local Constants = {}
 
 Constants.SIZE = 15
 Constants.CELL_SIZE = 50
+Constants.SPRITE_SIZE = 32
 Constants.MINES = 40
 
 return Constants

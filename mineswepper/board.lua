@@ -36,7 +36,7 @@ function Board.create_cell()
   return board
 end
 
-function is_valid_index(x, y)
+local function is_valid_index(x, y)
   if x < 1 or x > SIZE then
     return false
   end
