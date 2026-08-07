@@ -48,6 +48,7 @@ function _update(dt)
   end
 
   State.cat:update(dt)
+  State.board:update(dt)
 end
   
 function _draw(dt)

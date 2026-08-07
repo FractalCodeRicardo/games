@@ -1,4 +1,5 @@
 local Constants = require("constants")
+local Explotion = require("explotion")
 
 local SIZE = Constants.SIZE
 local MINES = Constants.MINES
@@ -28,6 +29,7 @@ function Board.create_cell()
         value = 0,
         open = false,
         mine = false,
+        explotion = Explotion:new(x,y)
       })
     end
     table.insert(board, row)
@@ -137,6 +139,7 @@ function Board:open(mx, my)
 
   local cell = self.cells[y][x];
 
+  self.cells[x][y].explotion:start()
   if cell.mine then
     self:open_mine()
   else
@@ -166,6 +169,14 @@ function Board:open_all()
   end
 end
 
+function Board:update(dt)
+  for y = 1, SIZE do
+    for x = 1, SIZE do
+      self.cells[y][x].explotion:update(dt)
+    end
+  end
+end
+
 
 function Board:draw_board()
   for y = 1, SIZE do
@@ -173,6 +184,8 @@ function Board:draw_board()
       local sx = (x - 1) * CELL_SIZE
       local sy = (y - 1) * CELL_SIZE
       local cell = self.cells[y][x]
+
+      cell.explotion:draw()
 
       gfx.rect(
         sx,
