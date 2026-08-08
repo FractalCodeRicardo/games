@@ -1,5 +1,5 @@
 local Constants = require("constants")
-local SIZE = Constants.SIZE;
+local SIZE = Constants.BOARD_SIZE;
 
 local bottomSprite = 1
 local upSprite = 2

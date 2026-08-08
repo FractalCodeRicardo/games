@@ -1,9 +1,10 @@
 local Constants = require("constants")
 local Board = require("board")
 local Cat = require("cat")
-local Problem = require("problem")
+local Footer = require("footer")
+local Score = require("score")
 
-local SIZE = Constants.SIZE;
+local SIZE = Constants.BOARD_SIZE;
 local CELL_SIZE = Constants.CELL_SIZE;
 local MINES = Constants.MINES;
 
@@ -12,9 +13,9 @@ function _config()
   ---@type Usagi.Config
   return {
     name = "Game",
-    game_id = "com.usagiengine.YOURGAMENAME",
-    game_height = SIZE * CELL_SIZE,
-    game_width = SIZE * CELL_SIZE,
+    game_id = "com.usagiengine.mineswepper",
+    game_height = Constants.get_screen_height(),
+    game_width = Constants.get_screen_width(),
     sprite_size = Constants.SPRITE_SIZE
   }
 end
@@ -27,8 +28,8 @@ function _init()
     game_over = false,
     cat = cat,
     board = board,
-    state = "problem",
-    problem = Problem:new()
+    footer = Footer:new(),
+    score = Score:new()
   }
 
   -- music.play_ex("music", 0.5, 1.0, 1.0, true)
@@ -46,6 +47,7 @@ end
 function update_game(dt)
   local board = State.board;
   local cat = State.cat;
+  local footer = State.footer;
 
   if input.key_pressed(input.KEY_SPACE) then
     board:open(cat.x, cat.y)
@@ -55,16 +57,8 @@ function update_game(dt)
   board:update(dt)
 end
 
-function update_problem(dt)
-  State.problem:update()
-end
-
 function _update(dt)
-  if State.state == "game" then
-    update_game(dt)
-  else
-    update_problem(dt)
-  end
+  update_game(dt)
 end
 
 function draw_game()
@@ -73,18 +67,11 @@ function draw_game()
   end
   State.board:draw_board()
   State.cat:draw()
-end
-
-function draw_problem()
-  State.problem:draw()
+  State.footer:draw()
+  State.score:draw()
 end
 
 function _draw(dt)
   gfx.clear(gfx.COLOR_DARK_PURPLE)
-
-  if State.state == "game" then
-    draw_game()
-  else
-    draw_problem()
-  end
+  draw_game()
 end

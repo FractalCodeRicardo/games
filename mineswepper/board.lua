@@ -1,7 +1,7 @@
 local Constants = require("constants")
 local Explosion = require("explosion")
 
-local SIZE = Constants.SIZE
+local SIZE = Constants.BOARD_SIZE
 local MINES = Constants.MINES
 local CELL_SIZE = Constants.CELL_SIZE
 
