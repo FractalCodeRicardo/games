@@ -1,5 +1,5 @@
 local Constants = require("constants")
-local Explotion = require("explotion")
+local Explosion = require("explosion")
 
 local SIZE = Constants.SIZE
 local MINES = Constants.MINES
@@ -10,27 +10,34 @@ Board.__index = Board;
 
 function Board:new()
   local board = setmetatable({}, Board)
-  board.cells = board.create_cell()
+  board.cells = board.create_cells()
 
   board:set_mines()
   board:set_sums()
   return board
 end
 
-function Board.create_cell()
+function Board.create_cell(x, y)
+  local cell = {
+    x = x,
+    y = y,
+    value = 0,
+    open = false,
+    mine = false,
+    explosion = Explosion:new(x, y)
+  }
+
+  return cell
+end
+
+function Board.create_cells()
   local board = {}
 
   for y = 1, SIZE do
     local row = {}
     for x = 1, SIZE do
-      table.insert(row, {
-        x = x,
-        y = y,
-        value = 0,
-        open = false,
-        mine = false,
-        explotion = Explotion:new(x,y)
-      })
+      local cell = Board.create_cell(x, y)
+      table.insert(row, cell)
     end
     table.insert(board, row)
   end
@@ -59,7 +66,6 @@ function Board:set_mines()
   end
 end
 
-
 function Board:get_neightbors(x, y)
   local res = {}
 
@@ -87,7 +93,6 @@ function Board:get_neightbors(x, y)
   return res;
 end
 
-
 function Board:get_sum(x, y)
   local neightbors = self:get_neightbors(x, y)
 
@@ -101,7 +106,6 @@ function Board:get_sum(x, y)
   return sum
 end
 
-
 function Board:set_sums()
   for y = 1, SIZE do
     for x = 1, SIZE do
@@ -111,11 +115,14 @@ function Board:set_sums()
   end
 end
 
+function Board:open_cell(cell)
+    cell.open = true
+    cell.explosion:start()
+end
 
 function Board:open_recursive(x, y)
   local neightbors = self:get_neightbors(x, y)
   for i, n in pairs(neightbors) do
-
     if n.mine then
       goto continue
     end
@@ -124,7 +131,7 @@ function Board:open_recursive(x, y)
       goto continue
     end
 
-    n.open = true
+    self:open_cell(n)
     if n.value == 0 then
       self:open_recursive(n.x, n.y)
     end
@@ -133,13 +140,10 @@ function Board:open_recursive(x, y)
   end
 end
 
-function Board:open(mx, my)
-  local x = math.floor(mx / CELL_SIZE) + 1;
-  local y = math.floor(my / CELL_SIZE) + 1;
+function Board:open(x, y)
 
   local cell = self.cells[y][x];
 
-  self.cells[x][y].explotion:start()
   if cell.mine then
     self:open_mine()
   else
@@ -147,9 +151,8 @@ function Board:open(mx, my)
   end
 end
 
-
 function Board:open_non_mine(cell)
-  cell.open = true
+  self:open_cell(cell)
 
   if cell.value == 0 then
     self:open_recursive(cell.x, cell.y)
@@ -172,11 +175,10 @@ end
 function Board:update(dt)
   for y = 1, SIZE do
     for x = 1, SIZE do
-      self.cells[y][x].explotion:update(dt)
+      self.cells[y][x].explosion:update(dt)
     end
   end
 end
-
 
 function Board:draw_board()
   for y = 1, SIZE do
@@ -185,7 +187,7 @@ function Board:draw_board()
       local sy = (y - 1) * CELL_SIZE
       local cell = self.cells[y][x]
 
-      cell.explotion:draw()
+      cell.explosion:draw()
 
       gfx.rect(
         sx,
@@ -216,6 +218,5 @@ function Board:draw_board()
     end
   end
 end
-
 
 return Board

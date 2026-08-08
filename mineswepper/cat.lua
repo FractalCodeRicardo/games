@@ -6,7 +6,7 @@ local upSprite = 2
 local rightSprite = 3
 local leftSprite = 4
 
-local stop_when_time = 1
+local stop_when_time = 0.6
 
 local Cat = {}
 Cat.__index = Cat
@@ -32,46 +32,53 @@ function Cat:draw()
   )
 end
 
-function Cat:move(x,y)
+function Cat:move(x, y)
   local nx = self.x + x
   local ny = self.y + y
 
-  print(string.format("%f %f %f %f", self.x, self.y, nx, ny))
-  if nx < SIZE and nx >0   then
+  if nx <= SIZE and nx > 0 then
     self.x = nx
   end
 
-  if ny < SIZE and ny > 0 then
+  if ny <= SIZE and ny > 0 then
     self.y = ny
   end
 end
 
+local function play_jump()
+  sfx.play("jump")
+end
+
 function Cat:left(dt)
- self:move(-1, 0)
- self.sprite = leftSprite
- self.moving = true
- self.moving_time = 0
+  self:move(-1, 0)
+  self.sprite = leftSprite
+  self.moving = true
+  self.moving_time = 0
+  play_jump()
 end
 
 function Cat:right(dt)
- self:move(1, 0)
- self.sprite = rightSprite
- self.moving = true
- self.moving_time = 0
+  self:move(1, 0)
+  self.sprite = rightSprite
+  self.moving = true
+  self.moving_time = 0
+  play_jump()
 end
 
 function Cat:down(dt)
- self:move(0, 1)
- self.sprite = bottomSprite
- self.moving = true
- self.moving_time = 0
+  self:move(0, 1)
+  self.sprite = bottomSprite
+  self.moving = true
+  self.moving_time = 0
+  play_jump()
 end
 
 function Cat:up(dt)
- self:move(0, -1)
- self.sprite = upSprite
- self.moving = true
- self.moving_time = 0
+  self:move(0, -1)
+  self.sprite = upSprite
+  self.moving = true
+  self.moving_time = 0
+  play_jump()
 end
 
 function Cat:update(dt)

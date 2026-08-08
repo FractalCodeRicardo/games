@@ -1,0 +1,62 @@
+[
+  {
+    "description": "What will be printed after adding 5 to x?",
+    "problem": "local x = 10\nx = x + 5\nprint(x)",
+    "options": [15, 10, 5],
+    "correct": 0
+  },
+  {
+    "description": "What will be printed after multiplying x by 3?",
+    "problem": "local x = 4\nx = x * 3\nprint(x)",
+    "options": [7, 12, 16],
+    "correct": 1
+  },
+  {
+    "description": "What will be printed after subtracting 7 from x?",
+    "problem": "local x = 20\nx = x - 7\nprint(x)",
+    "options": [13, 27, 14],
+    "correct": 0
+  },
+  {
+    "description": "What will be printed after dividing x by 2?",
+    "problem": "local x = 18\nx = x / 2\nprint(x)",
+    "options": [8, 9, 10],
+    "correct": 1
+  },
+  {
+    "description": "What will be printed after increasing x by 1 twice?",
+    "problem": "local x = 5\nx = x + 1\nx = x + 1\nprint(x)",
+    "options": [6, 7, 8],
+    "correct": 1
+  },
+  {
+    "description": "What will be printed after swapping the values of x and y?",
+    "problem": "local x = 3\nlocal y = 8\nx, y = y, x\nprint(x)",
+    "options": [3, 8, 11],
+    "correct": 1
+  },
+  {
+    "description": "What will be printed after adding x and y together?",
+    "problem": "local x = 6\nlocal y = 4\nlocal result = x + y\nprint(result)",
+    "options": [2, 10, 24],
+    "correct": 1
+  },
+  {
+    "description": "What will be printed after taking the remainder of x divided by 3?",
+    "problem": "local x = 14\nlocal result = x % 3\nprint(result)",
+    "options": [2, 4, 5],
+    "correct": 0
+  },
+  {
+    "description": "What will be printed after doubling x and subtracting 2?",
+    "problem": "local x = 7\nx = x * 2\nx = x - 2\nprint(x)",
+    "options": [12, 14, 16],
+    "correct": 0
+  },
+  {
+    "description": "What will be printed after increasing x by 10 and dividing it by 2?",
+    "problem": "local x = 6\nx = x + 10\nx = x / 2\nprint(x)",
+    "options": [8, 10, 16],
+    "correct": 0
+  }
+]
