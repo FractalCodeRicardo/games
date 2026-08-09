@@ -44,13 +44,25 @@ local function draw_game_over()
     gfx.COLOR_TRUE_WHITE, 1)
 end
 
+function refresh_score()
+  local score = State.board:get_score()
+  State.score:update_score(score)
+end
+
 function update_game(dt)
   local board = State.board;
   local cat = State.cat;
   local footer = State.footer;
+  local score = State.score;
 
-  if input.key_pressed(input.KEY_SPACE) then
+  if input.key_pressed(input.KEY_Q) then
     board:open(cat.x, cat.y)
+    refresh_score()
+  end
+
+  if input.key_pressed(input.KEY_W) then
+    board:add_flag(cat.x, cat.y)
+    refresh_score()
   end
 
   cat:update(dt)

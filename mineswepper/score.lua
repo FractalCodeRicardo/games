@@ -7,10 +7,10 @@ Score.__index = Score;
 
 function Score:new()
   local instance = setmetatable({}, Score)
-  instance.totalSquares = 100
-  instance.openSquares = 70
-  instance.totalMines = 100
-  instance.openMines = 40
+  instance.totalSquares = 0
+  instance.openSquares = 0
+  instance.totalMines = 0
+  instance.openMines = 0
   return instance
 end
 
@@ -27,7 +27,7 @@ end
 function Score:draw_bar(y, progress, total, title)
 
   local discovered = progress / total
-  local discoveredText = string.format("%i/%i %s", self.openSquares, self.totalSquares, title)
+  local discoveredText = string.format("%i/%i %s", progress, total, title)
 
   gfx.text(discoveredText, board_size +  10, y, gfx.COLOR_WHITE)
 
@@ -38,8 +38,11 @@ function Score:draw_bar(y, progress, total, title)
   gfx.rect_fill(start + 6, y + 16, pw, 13, gfx.COLOR_GREEN)
 end
 
-function Score:update_score()
-
+function Score:update_score(score)
+  self.totalSquares = score.totalSquares
+  self.openSquares = score.openSquares
+  self.totalMines = score.totalMines
+  self.openMines = score.openMines
 end
 
 return Score

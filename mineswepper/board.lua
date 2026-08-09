@@ -24,6 +24,7 @@ function Board.create_cell(x, y)
     value = 0,
     open = false,
     mine = false,
+    flag = false,
     explosion = Explosion:new(x, y)
   }
 
@@ -116,8 +117,9 @@ function Board:set_sums()
 end
 
 function Board:open_cell(cell)
-    cell.open = true
-    cell.explosion:start()
+  cell.open = true
+  cell.flag = false
+  cell.explosion:start()
 end
 
 function Board:open_recursive(x, y)
@@ -140,8 +142,18 @@ function Board:open_recursive(x, y)
   end
 end
 
-function Board:open(x, y)
+function Board:add_flag(x, y)
+  local cell =self.cells[y][x];
+  if cell.open then
+    return false
+  end
 
+  cell.flag = true
+  sfx.play("flag")
+  return true
+end
+
+function Board:open(x, y)
   local cell = self.cells[y][x];
 
   if cell.mine then
@@ -180,43 +192,84 @@ function Board:update(dt)
   end
 end
 
+function Board:draw_cell(cell)
+  local sx = (cell.x - 1) * CELL_SIZE
+  local sy = (cell.y - 1) * CELL_SIZE
+
+  cell.explosion:draw()
+
+  gfx.rect(
+    sx,
+    sy,
+    CELL_SIZE,
+    CELL_SIZE,
+    gfx.COLOR_PEACH
+  )
+
+  local px = sx + CELL_SIZE / 2 - 5;
+  local py = sy + CELL_SIZE / 2 - 20;
+
+
+  if cell.open == true then
+    if cell.mine == false then
+      gfx.text_ex(cell.value .. "",
+        px,
+        py,
+        3, 0,
+        gfx.COLOR_WHITE, 1
+      )
+    else
+      gfx.text_ex("x",
+        px,
+        py,
+        3, 0,
+        gfx.COLOR_GREEN, 1
+      )
+    end
+    return
+  end
+
+  if cell.flag then
+    gfx.spr(9,
+      px,
+      py
+    )
+  end
+end
+
 function Board:draw_board()
   for y = 1, SIZE do
     for x = 1, SIZE do
-      local sx = (x - 1) * CELL_SIZE
-      local sy = (y - 1) * CELL_SIZE
-      local cell = self.cells[y][x]
-
-      cell.explosion:draw()
-
-      gfx.rect(
-        sx,
-        sy,
-        CELL_SIZE,
-        CELL_SIZE,
-        gfx.COLOR_PEACH
-      )
-
-
-      if cell.open == true then
-        if cell.mine == false then
-          gfx.text_ex(cell.value .. "",
-            sx + CELL_SIZE / 2 - 6,
-            sy + CELL_SIZE / 2 - 20,
-            3, 0,
-            gfx.COLOR_WHITE, 1
-          )
-        else
-          gfx.text_ex("x",
-            sx + CELL_SIZE / 2 - 6,
-            sy + CELL_SIZE / 2 - 20,
-            3, 0,
-            gfx.COLOR_GREEN, 1
-          )
-        end
-      end
+      self:draw_cell(self.cells[y][x])
     end
   end
+end
+
+function Board:get_score()
+  local opens = 0
+  local flags = 0
+  for y = 1, SIZE do
+    for x = 1, SIZE do
+      local cell = self.cells[y][x]
+
+      if cell.open then
+        opens +=1
+      end
+
+      if cell.flag then
+        flags += 1
+      end
+
+    end
+  end
+
+  return  {
+    totalSquares = SIZE * SIZE,
+    openSquares = opens,
+    totalMines = Constants.MINES,
+    openMines = flags
+  }
+
 end
 
 return Board
