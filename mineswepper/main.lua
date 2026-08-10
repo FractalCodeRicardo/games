@@ -3,6 +3,7 @@ local Board = require("board")
 local Cat = require("cat")
 local Footer = require("footer")
 local Score = require("score")
+local Menu = require("menu")
 
 local SIZE = Constants.BOARD_SIZE;
 local CELL_SIZE = Constants.CELL_SIZE;
@@ -24,15 +25,21 @@ function _init()
   local board = Board:new()
   local cat = Cat:new()
 
+  Menu.on_start = function()
+    State.state = "game"
+  end
+
   State = {
     game_over = false,
     cat = cat,
     board = board,
     footer = Footer:new(),
-    score = Score:new()
+    score = Score:new(),
+    menu = Menu,
+    state = "menu"
   }
 
-  -- music.play_ex("music", 0.5, 1.0, 1.0, true)
+  music.play_ex("music", 0.5, 1.0, 1.0, true)
 end
 
 local function draw_game_over()
@@ -56,24 +63,40 @@ function update_game(dt)
   local score = State.score;
 
   if input.key_pressed(input.KEY_Q) then
-    board:open(cat.x, cat.y)
-    refresh_score()
+    footer:show_problem(function(success)
+      if success then
+        board:open(cat.x, cat.y)
+        refresh_score()
+      end
+    end)
   end
 
   if input.key_pressed(input.KEY_W) then
-    board:add_flag(cat.x, cat.y)
+    board:toggle_flag(cat.x, cat.y)
     refresh_score()
   end
 
-  cat:update(dt)
+  if not footer:user_is_solving() then
+    cat:update(dt)
+  end
   board:update(dt)
+  footer:update(dt)
+  score:update(dt)
+end
+
+local function update_menu()
+  State.menu.update()
 end
 
 function _update(dt)
-  update_game(dt)
+  if State.state == "menu" then
+    update_menu()
+  else
+    update_game(dt)
+  end
 end
 
-function draw_game()
+local function draw_game()
   if State.game_over then
     draw_game_over()
   end
@@ -83,7 +106,16 @@ function draw_game()
   State.score:draw()
 end
 
+local function draw_menu()
+  State.menu.draw()
+end
+
 function _draw(dt)
   gfx.clear(gfx.COLOR_DARK_PURPLE)
-  draw_game()
+
+  if State.state == "menu" then
+    draw_menu()
+  else
+    draw_game()
+  end
 end

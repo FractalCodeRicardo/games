@@ -142,13 +142,13 @@ function Board:open_recursive(x, y)
   end
 end
 
-function Board:add_flag(x, y)
+function Board:toggle_flag(x, y)
   local cell =self.cells[y][x];
   if cell.open then
     return false
   end
 
-  cell.flag = true
+  cell.flag = not cell.flag
   sfx.play("flag")
   return true
 end
@@ -231,8 +231,8 @@ function Board:draw_cell(cell)
 
   if cell.flag then
     gfx.spr(9,
-      px,
-      py
+      px - 10,
+      py + 3 
     )
   end
 end

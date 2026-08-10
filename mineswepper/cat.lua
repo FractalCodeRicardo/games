@@ -24,11 +24,10 @@ end
 function Cat:draw()
   local sx = (self.x - 1) * Constants.CELL_SIZE;
   local sy = (self.y - 1) * Constants.CELL_SIZE;
-  local offset = 6
 
   gfx.spr(self.sprite,
-    offset + sx,
-    offset + sy
+     2 + sx,
+    3 + sy
   )
 end
 

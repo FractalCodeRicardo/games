@@ -1,62 +1,62 @@
 [
   {
-    "description": "What will be printed after adding 5 to x?",
-    "problem": "local x = 10\nx = x + 5\nprint(x)",
-    "options": [15, 10, 5],
-    "correct": 0
-  },
-  {
-    "description": "What will be printed after multiplying x by 3?",
-    "problem": "local x = 4\nx = x * 3\nprint(x)",
-    "options": [7, 12, 16],
+    "description": "What will be printed after the loop finishes?",
+    "problem": "local x = 0\nfor i = 1, 3 do\n  x = x + 2\nend\nprint(x)",
+    "options": [4, 6, 8],
     "correct": 1
   },
   {
-    "description": "What will be printed after subtracting 7 from x?",
-    "problem": "local x = 20\nx = x - 7\nprint(x)",
-    "options": [13, 27, 14],
-    "correct": 0
-  },
-  {
-    "description": "What will be printed after dividing x by 2?",
-    "problem": "local x = 18\nx = x / 2\nprint(x)",
-    "options": [8, 9, 10],
+    "description": "What will be printed after the loop finishes?",
+    "problem": "local x = 1\nfor i = 1, 4 do\n  x = x + 1\nend\nprint(x)",
+    "options": [4, 5, 6],
     "correct": 1
   },
   {
-    "description": "What will be printed after increasing x by 1 twice?",
-    "problem": "local x = 5\nx = x + 1\nx = x + 1\nprint(x)",
-    "options": [6, 7, 8],
+    "description": "What will be printed after adding the loop counter?",
+    "problem": "local x = 0\nfor i = 1, 4 do\n  x = x + i\nend\nprint(x)",
+    "options": [8, 10, 12],
     "correct": 1
   },
   {
-    "description": "What will be printed after swapping the values of x and y?",
-    "problem": "local x = 3\nlocal y = 8\nx, y = y, x\nprint(x)",
-    "options": [3, 8, 11],
+    "description": "What will be printed after the loop doubles x?",
+    "problem": "local x = 2\nfor i = 1, 3 do\n  x = x * 2\nend\nprint(x)",
+    "options": [6, 12, 16],
+    "correct": 2
+  },
+  {
+    "description": "What will be printed after subtracting 2 each time?",
+    "problem": "local x = 10\nfor i = 1, 3 do\n  x = x - 2\nend\nprint(x)",
+    "options": [4, 6, 9],
+    "correct": 0
+  },
+  {
+    "description": "What will be printed after the loop finishes?",
+    "problem": "local x = 5\nfor i = 1, 5 do\n  x = x + 1\nend\nprint(x)",
+    "options": [9, 10, 11],
     "correct": 1
   },
   {
-    "description": "What will be printed after adding x and y together?",
-    "problem": "local x = 6\nlocal y = 4\nlocal result = x + y\nprint(result)",
-    "options": [2, 10, 24],
+    "description": "What will be printed after adding i on each iteration?",
+    "problem": "local x = 2\nfor i = 1, 3 do\n  x = x + i\nend\nprint(x)",
+    "options": [6, 8, 10],
     "correct": 1
   },
   {
-    "description": "What will be printed after taking the remainder of x divided by 3?",
-    "problem": "local x = 14\nlocal result = x % 3\nprint(result)",
-    "options": [2, 4, 5],
+    "description": "What will be printed after multiplying x by 3 each time?",
+    "problem": "local x = 1\nfor i = 1, 2 do\n  x = x * 3\nend\nprint(x)",
+    "options": [3, 6, 9],
+    "correct": 2
+  },
+  {
+    "description": "What will be printed after the loop finishes?",
+    "problem": "local x = 20\nfor i = 1, 4 do\n  x = x - 3\nend\nprint(x)",
+    "options": [8, 12, 14],
     "correct": 0
   },
   {
-    "description": "What will be printed after doubling x and subtracting 2?",
-    "problem": "local x = 7\nx = x * 2\nx = x - 2\nprint(x)",
-    "options": [12, 14, 16],
-    "correct": 0
-  },
-  {
-    "description": "What will be printed after increasing x by 10 and dividing it by 2?",
-    "problem": "local x = 6\nx = x + 10\nx = x / 2\nprint(x)",
-    "options": [8, 10, 16],
-    "correct": 0
+    "description": "What will be printed after adding 5 on each iteration?",
+    "problem": "local x = 0\nfor i = 1, 4 do\n  x = x + 5\nend\nprint(x)",
+    "options": [15, 20, 25],
+    "correct": 1
   }
 ]
