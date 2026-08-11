@@ -4,10 +4,21 @@ local Cat = require("cat")
 local Footer = require("footer")
 local Score = require("score")
 local Menu = require("menu")
+local AI = require("ai")
 
 local SIZE = Constants.BOARD_SIZE;
 local CELL_SIZE = Constants.CELL_SIZE;
 local MINES = Constants.MINES;
+
+local states = {
+  menu = "menu",
+  playing = "playing"
+}
+
+local modes = {
+  solve_problems = "solve_problems",
+  vsAI = "vsAI"
+}
 
 
 function _config()
@@ -20,6 +31,7 @@ function _config()
     sprite_size = Constants.SPRITE_SIZE
   }
 end
+
 
 function _init()
   local board = Board:new()
@@ -36,10 +48,12 @@ function _init()
     footer = Footer:new(),
     score = Score:new(),
     menu = Menu,
-    state = "menu"
+    state = states.menu,
+    mode = modes.solve_problems
   }
 
-  music.play_ex("music", 0.5, 1.0, 1.0, true)
+  -- music.play_ex("music", 0.5, 1.0, 1.0, true)
+
 end
 
 local function draw_game_over()
@@ -51,24 +65,55 @@ local function draw_game_over()
     gfx.COLOR_TRUE_WHITE, 1)
 end
 
-function refresh_score()
+local function refresh_score()
   local score = State.board:get_score()
   State.score:update_score(score)
 end
 
-function update_game(dt)
-  local board = State.board;
-  local cat = State.cat;
-  local footer = State.footer;
-  local score = State.score;
 
-  if input.key_pressed(input.KEY_Q) then
+local function uncover_cell()
+  local footer = State.footer
+  local board = State.board
+  local cat = State.board
+
+  if State.mode == modes.solve_problems then
     footer:show_problem(function(success)
       if success then
         board:open(cat.x, cat.y)
         refresh_score()
       end
     end)
+
+    return
+  end
+
+  board:open(cat.x, cat.y)
+  refresh_score()
+end
+
+local function AI_move() 
+  local move = AI.get_move(State.board.cells)
+
+  if move.move == "uncover" then
+    State.board.open(move.x, move.y)
+  end
+
+  if move.move == "flag" then
+    State.board.toggle_flag(move.x, move.y)
+  end
+
+  refresh_score()
+end
+
+local function update_game(dt)
+  local board = State.board;
+  local cat = State.cat;
+  local footer = State.footer;
+  local score = State.score;
+
+  if input.key_pressed(input.KEY_Q) then
+    AI_move()
+    -- uncover_cell()
   end
 
   if input.key_pressed(input.KEY_W) then
@@ -89,7 +134,7 @@ local function update_menu()
 end
 
 function _update(dt)
-  if State.state == "menu" then
+  if State.state == states.menu then
     update_menu()
   else
     update_game(dt)
