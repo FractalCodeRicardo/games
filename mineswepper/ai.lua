@@ -3,18 +3,34 @@ local AI = {}
 
 function AI.create_input(board)
 local request = {
-    model = "gpt-5-mini",
-    instructions = [[
-You are a minesweeper player. You will receive the board as a text with this format:
+    model = "gpt-5.4-mini",
+instructions = [[
+You are playing Minesweeper.
 
-- N rows divided by linebreaks
-- Each row contains N columns separated by a comma
-- Each element can have these values:
-  0 - cover cell
-  f - flag
-  Number - uncover cell with Number mines around
-- You must respond with uncover,x,y where x is the column number and y is the row number to uncover that cell.
-- You must respond with flag,x,y to put a flag in that cell.
+RULES:
+- A number indicates how many mines are in its 8 neighboring cells.
+- A flagged cell is believed to contain a mine.
+- A covered cell is unknown.
+- You can uncover a covered cell or flag a covered cell.
+- Never uncover a cell that you know contains a mine.
+- Prefer moves that are logically guaranteed to be safe.
+- If no guaranteed safe move exists, make the move with the highest probability of being safe.
+
+COORDINATES:
+- x = column
+- y = row
+- coordinates start at 1
+- (1,1) is the top-left cell
+
+OUTPUT:
+Return ONLY:
+uncover,x,y
+
+or:
+flag,x,y
+
+Do not explain your decision.
+Do not output anything else.
 ]],
     input = board
 }
@@ -38,7 +54,7 @@ function AI.send_request(board)
   local handle = io.popen(command)
 
   if handle == nil then
-    print("Error on io.popen")
+    error("Error on io.popen")
     return
   end
 
@@ -64,7 +80,7 @@ function AI.board_as_string(cells)
     local line = ""
     for x = 1, size do
       local cell = cells[y][x]
-      local value = "0"
+      local value = "x"
 
       if cell.open then
         value = cell.value .. ""
@@ -91,26 +107,31 @@ end
 
 function AI.get_move(cells)
   local board = AI.board_as_string(cells)
+
+  print("Sending request...")
+  print(board)
   local res = AI.send_request(board)
+  print("ok...")
 
   local file = io.open("data/response.json", "w")
 
   if file == nil then
-    print("Error opening file")
-    return nil
+    error("Error opening file")
   end
 
   file:write(res)
   file:close()
 
   local json = usagi.read_json("response.json")
-  local text = json.output[2].content[1].text
-  local text_split = split(text)
+
+
+  local content = json.output[1].content[1]
+  local text_split = split(content.text, ",")
 
   return {
     move = text_split[1],
-    x = text_split[2],
-    y = text_split[3],
+    x = tonumber(text_split[2]),
+    y = tonumber(text_split[3]),
   }
 end
 

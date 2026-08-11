@@ -32,7 +32,6 @@ function _config()
   }
 end
 
-
 function _init()
   local board = Board:new()
   local cat = Cat:new()
@@ -53,7 +52,6 @@ function _init()
   }
 
   -- music.play_ex("music", 0.5, 1.0, 1.0, true)
-
 end
 
 local function draw_game_over()
@@ -91,15 +89,22 @@ local function uncover_cell()
   refresh_score()
 end
 
-local function AI_move() 
+local function AI_move()
   local move = AI.get_move(State.board.cells)
 
+  if move == nil then
+    error("Error getting the move")
+    return
+  end
+
+  print("Move " .. usagi.to_json(move))
+
   if move.move == "uncover" then
-    State.board.open(move.x, move.y)
+    State.board:open(move.x, move.y)
   end
 
   if move.move == "flag" then
-    State.board.toggle_flag(move.x, move.y)
+    State.board:toggle_flag(move.x, move.y)
   end
 
   refresh_score()
