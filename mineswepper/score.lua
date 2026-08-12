@@ -12,6 +12,8 @@ function Score:new()
   instance.totalMines = 0
   instance.openMines = 0
   instance.seconds = Constants.SECONDS
+  instance.cat_flags = 0
+  instance.ia_flags = 0
   return instance
 end
 
@@ -19,7 +21,7 @@ function Score:draw()
   gfx.rect_fill(start, 5, Constants.SCORE_SIZE - 10, board_size - 10, gfx.COLOR_BLACK)
   gfx.rect(start, 5, Constants.SCORE_SIZE - 10, board_size - 10, gfx.COLOR_PEACH)
 
-  gfx.text("SCORE <(^_^)> ", board_size +  10, 10, gfx.COLOR_WHITE)
+  gfx.text("SCORE <(^_^)> ", board_size + 10, 10, gfx.COLOR_WHITE)
 
   self:draw_bar(40, self.openSquares, self.totalSquares, "squares")
   self:draw_bar(80, self.openMines, self.totalMines, "Mines")
@@ -28,11 +30,10 @@ function Score:draw()
 end
 
 function Score:draw_bar(y, progress, total, title)
-
   local discovered = progress / total
   local discoveredText = string.format("%i/%i %s", progress, total, title)
 
-  gfx.text(discoveredText, board_size +  10, y, gfx.COLOR_WHITE)
+  gfx.text(discoveredText, board_size + 10, y, gfx.COLOR_WHITE)
 
   local w = Constants.SCORE_SIZE - 30;
   gfx.rect(start + 5, y + 15, w, 15, gfx.COLOR_PEACH)
@@ -53,8 +54,8 @@ function Score:draw_seconds()
 
   local text = string.format("%02d:%02d", minutes, seconds)
 
-  gfx.text_ex(text, start + 15, 
-    board_size  - 50,
+  gfx.text_ex(text, start + 15,
+    board_size - 50,
     2,
     0,
     gfx.COLOR_GREEN,
@@ -71,6 +72,11 @@ end
 
 function Score:update(dt)
   self.seconds -= dt
+end
+
+function Score:increase_flags(cat, ia)
+  self.cat_flags += cat
+  self.ia_flags = ia
 end
 
 return Score

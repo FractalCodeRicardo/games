@@ -20,6 +20,11 @@ local modes = {
   vsAI = "vsAI"
 }
 
+local turns = {
+  cat = "cat",
+  ia = "ia"
+}
+
 
 function _config()
   ---@type Usagi.Config
@@ -33,8 +38,11 @@ function _config()
 end
 
 function _init()
+  local y = math.floor(SIZE / 2)
+  local x = math.floor(SIZE / 2)
   local board = Board:new()
-  local cat = Cat:new()
+  local cat = Cat:new("me", x - 1, y, 1)
+  local ia = Cat:new("ia", x + 1, y, 9)
 
   Menu.on_start = function()
     State.state = "game"
@@ -43,6 +51,8 @@ function _init()
   State = {
     game_over = false,
     cat = cat,
+    ia = ia,
+    current_turn = turns.cat,
     board = board,
     footer = Footer:new(),
     score = Score:new(),
@@ -89,8 +99,18 @@ local function uncover_cell()
   refresh_score()
 end
 
+local function change_turn()
+  if State.current_turn == turns.cat then
+    State.current_turn = turns.ia
+  else
+    State.current_turn = turns.cat
+  end
+end
+
 local function AI_move()
   local move = AI.get_move(State.board.cells)
+  local board = State.board
+  local score = State.score
 
   if move == nil then
     error("Error getting the move")
@@ -100,15 +120,23 @@ local function AI_move()
   print("Move " .. usagi.to_json(move))
 
   if move.move == "uncover" then
-    State.board:open(move.x, move.y)
+    board:open(move.x, move.y)
+    change_turn()
+    return
   end
 
   if move.move == "flag" then
-    State.board:toggle_flag(move.x, move.y)
+    local win = board:add_flag(move.x, move.y)
+    if win then
+      score:increase_flags(0, 1)
+    else
+      change_turn()
+    end
   end
 
   refresh_score()
 end
+
 
 local function update_game(dt)
   local board = State.board;
@@ -116,14 +144,22 @@ local function update_game(dt)
   local footer = State.footer;
   local score = State.score;
 
-  if input.key_pressed(input.KEY_Q) then
-    AI_move()
-    -- uncover_cell()
-  end
+  if State.current_turn == turns.cat then
+    if input.key_pressed(input.KEY_Q) then
+      uncover_cell()
+      change_turn()
+    end
 
-  if input.key_pressed(input.KEY_W) then
-    board:toggle_flag(cat.x, cat.y)
-    refresh_score()
+    if input.key_pressed(input.KEY_W) then
+      local win = board:add_flag(cat.x, cat.y)
+      refresh_score()
+
+      if win then
+        State.score:increase_flags(1, 0)
+      else
+        change_turn()
+      end
+    end
   end
 
   if not footer:user_is_solving() then
@@ -132,6 +168,10 @@ local function update_game(dt)
   board:update(dt)
   footer:update(dt)
   score:update(dt)
+
+  if State.current_turn == turns.ia then
+    AI_move()
+  end
 end
 
 local function update_menu()

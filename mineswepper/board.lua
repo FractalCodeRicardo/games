@@ -142,15 +142,19 @@ function Board:open_recursive(x, y)
   end
 end
 
-function Board:toggle_flag(x, y)
+function Board:add_flag(x, y)
   local cell =self.cells[y][x];
-  if cell.open then
+  if cell.open or cell.flag then
     return false
   end
 
-  cell.flag = not cell.flag
-  sfx.play("flag")
-  return true
+  if cell.mine then
+    cell.flag = true
+    sfx.play("flag")
+    return true
+  end
+
+  return false
 end
 
 function Board:open(x, y)

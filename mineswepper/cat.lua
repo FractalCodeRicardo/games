@@ -1,30 +1,44 @@
 local Constants = require("constants")
 local SIZE = Constants.BOARD_SIZE;
 
-local bottomSprite = 1
-local upSprite = 2
-local rightSprite = 3
-local leftSprite = 4
-
 local stop_when_time = 0.6
 
 local Cat = {}
 Cat.__index = Cat
 
-function Cat:new()
+function Cat:new(name, x, y, baseSprite)
   local cat = setmetatable({}, Cat)
-  cat.x = math.floor(SIZE / 2)
-  cat.y = math.floor(SIZE / 2)
-  cat.sprite = bottomSprite
+  cat.x = x or math.floor(SIZE / 2)
+  cat.y = x or math.floor(SIZE / 2)
+  cat.sprite = baseSprite
+  cat.baseSprite = baseSprite
   cat.moving_time = 0
   cat.moving = false
+  cat.name = name or "unnamed"
   return cat
+end
+
+function Cat:bottomSprite()
+  return self.baseSprite
+end
+
+function Cat:upSprite()
+  return self.baseSprite + 1
+end
+
+function Cat:rightSprite()
+  return self.baseSprite + 2
+end
+
+function Cat:leftSprite()
+  return self.baseSprite + 3
 end
 
 function Cat:draw()
   local sx = (self.x - 1) * Constants.CELL_SIZE;
   local sy = (self.y - 1) * Constants.CELL_SIZE;
 
+  print(self.sprite)
   gfx.spr(self.sprite,
      2 + sx,
     3 + sy
@@ -50,7 +64,7 @@ end
 
 function Cat:left(dt)
   self:move(-1, 0)
-  self.sprite = leftSprite
+  self.sprite = self:leftSprite()
   self.moving = true
   self.moving_time = 0
   play_jump()
@@ -58,7 +72,7 @@ end
 
 function Cat:right(dt)
   self:move(1, 0)
-  self.sprite = rightSprite
+  self.sprite = self:rightSprite()
   self.moving = true
   self.moving_time = 0
   play_jump()
@@ -66,7 +80,7 @@ end
 
 function Cat:down(dt)
   self:move(0, 1)
-  self.sprite = bottomSprite
+  self.sprite = self:bottomSprite()
   self.moving = true
   self.moving_time = 0
   play_jump()
@@ -74,7 +88,7 @@ end
 
 function Cat:up(dt)
   self:move(0, -1)
-  self.sprite = upSprite
+  self.sprite = self:upSprite()
   self.moving = true
   self.moving_time = 0
   play_jump()
@@ -90,7 +104,7 @@ function Cat:update(dt)
   if self.moving and self.moving_time > stop_when_time then
     self.moving = false
     self.moving_time = true
-    self.sprite = bottomSprite
+    self.sprite = self.baseSprite
   end
 end
 
