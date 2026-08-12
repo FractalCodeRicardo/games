@@ -38,9 +38,8 @@ function Cat:draw()
   local sx = (self.x - 1) * Constants.CELL_SIZE;
   local sy = (self.y - 1) * Constants.CELL_SIZE;
 
-  print(self.sprite)
   gfx.spr(self.sprite,
-     2 + sx,
+    2 + sx,
     3 + sy
   )
 end
@@ -123,6 +122,32 @@ function Cat:handle_keys()
 
   if input.key_pressed(input.KEY_DOWN) then
     self:down()
+  end
+end
+
+function Cat:move_to(x, y)
+  local dx = math.abs(self.x - x)
+  local dy = math.abs(self.y - y)
+  while dx >= 2 or dy >= 2 do
+    if self.x < x then
+      self.x += 1
+    end
+
+    if self.x > x then
+      self.x -= 1
+    end
+
+    if self.y < y then
+      self.y += 1
+    end
+
+    if self.y > y then
+      self.y -= 1
+    end
+
+
+    dx = math.abs(self.x - x)
+    dy = math.abs(self.y - y)
   end
 end
 

@@ -2,9 +2,9 @@ local Constants = require("constants")
 local AI = {}
 
 function AI.create_input(board)
-local request = {
+  local request = {
     model = "gpt-5.4-mini",
-instructions = [[
+    instructions = [[
 You are playing Minesweeper.
 
 RULES:
@@ -33,7 +33,7 @@ Do not explain your decision.
 Do not output anything else.
 ]],
     input = board
-}
+  }
 
   local json = usagi.to_json(request)
 
@@ -64,13 +64,26 @@ function AI.send_request(board)
   return response
 end
 
-
 local function split(inputstr, sep)
   local t = {}
-  for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+  for str in string.gmatch(inputstr, "([^" .. sep .. "]+)") do
     table.insert(t, str)
   end
   return t
+end
+
+local function cell_as_string(cell)
+  local value = "x"
+
+  if cell.open then
+    value = cell.value .. ""
+  end
+
+  if cell.flag then
+    value = "f"
+  end
+
+  return value
 end
 
 function AI.board_as_string(cells)
@@ -80,15 +93,8 @@ function AI.board_as_string(cells)
     local line = ""
     for x = 1, size do
       local cell = cells[y][x]
-      local value = "x"
+      local value = cell_as_string(cell)
 
-      if cell.open then
-        value = cell.value .. ""
-      end
-
-      if cell.flag then
-        value = "f"
-      end
       line = line .. value
 
       if x ~= size then
@@ -105,13 +111,12 @@ function AI.board_as_string(cells)
   return board
 end
 
-function AI.get_move(cells)
+function AI.get_move(cells, callback)
   local board = AI.board_as_string(cells)
 
   print("Sending request...")
   print(board)
   local res = AI.send_request(board)
-  print("ok...")
 
   local file = io.open("data/response.json", "w")
 
@@ -123,16 +128,19 @@ function AI.get_move(cells)
   file:close()
 
   local json = usagi.read_json("response.json")
-
-
   local content = json.output[1].content[1]
   local text_split = split(content.text, ",")
 
-  return {
+  local move = {
     move = text_split[1],
     x = tonumber(text_split[2]),
     y = tonumber(text_split[3]),
   }
+
+  print("Move:")
+  print(usagi.to_json(move))
+
+  callback(move)
 end
 
 return AI

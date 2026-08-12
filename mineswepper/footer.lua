@@ -135,9 +135,6 @@ function Footer:update_problem()
 end
 
 function Footer:solve()
-  print(string.format("%i %i",
-  self.selection.correct,
-  self.index_option))
   local right = self.selection.correct == self.index_option
 
   self.on_solve(right)

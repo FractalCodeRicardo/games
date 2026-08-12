@@ -12,7 +12,8 @@ local MINES = Constants.MINES;
 
 local states = {
   menu = "menu",
-  playing = "playing"
+  playing = "playing",
+  ai_moving = "ai_moving"
 }
 
 local modes = {
@@ -22,7 +23,7 @@ local modes = {
 
 local turns = {
   cat = "cat",
-  ia = "ia"
+  ai = "ai"
 }
 
 
@@ -42,7 +43,7 @@ function _init()
   local x = math.floor(SIZE / 2)
   local board = Board:new()
   local cat = Cat:new("me", x - 1, y, 1)
-  local ia = Cat:new("ia", x + 1, y, 9)
+  local ai = Cat:new("ai", x + 1, y, 9)
 
   Menu.on_start = function()
     State.state = "game"
@@ -51,14 +52,14 @@ function _init()
   State = {
     game_over = false,
     cat = cat,
-    ia = ia,
+    ai = ai,
     current_turn = turns.cat,
     board = board,
     footer = Footer:new(),
     score = Score:new(),
     menu = Menu,
     state = states.menu,
-    mode = modes.solve_problems
+    mode = modes.vsAI
   }
 
   -- music.play_ex("music", 0.5, 1.0, 1.0, true)
@@ -67,10 +68,10 @@ end
 local function draw_game_over()
   gfx.text_ex("Game Over",
     usagi.GAME_W / 2 - 180,
-    usagi.GAME_H / 2 - 100,
-    8,
+    usagi.GAME_H / 2 - 130,
+    5,
     0,
-    gfx.COLOR_TRUE_WHITE, 1)
+    gfx.COLOR_RED, 1)
 end
 
 local function refresh_score()
@@ -78,16 +79,15 @@ local function refresh_score()
   State.score:update_score(score)
 end
 
-
 local function uncover_cell()
   local footer = State.footer
   local board = State.board
-  local cat = State.board
+  local cat = State.cat
 
   if State.mode == modes.solve_problems then
     footer:show_problem(function(success)
       if success then
-        board:open(cat.x, cat.y)
+        board:open(cat.x, cat.y, State.current_turn)
         refresh_score()
       end
     end)
@@ -95,7 +95,7 @@ local function uncover_cell()
     return
   end
 
-  board:open(cat.x, cat.y)
+  board:open(cat.x, cat.y, State.current_turn)
   refresh_score()
 end
 
@@ -107,36 +107,76 @@ local function change_turn()
   end
 end
 
-local function AI_move()
-  local move = AI.get_move(State.board.cells)
+local function AI_move(onFinish)
+  local cells = State.board.cells
+  local ai = State.ai
+  AI.get_move(cells, function(move)
+    local board = State.board
+    local score = State.score
+
+    if move == nil then
+      error("Error getting the move")
+      return
+    end
+
+    if move.move == "uncover" then
+      ai:move_to(move.x, move.y)
+      board:open(move.x, move.y, State.current_turn)
+      change_turn()
+      onFinish()
+      return
+    end
+
+    if move.move == "flag" then
+      ai:move_to(move.x, move.y)
+      local win = board:add_flag(move.x, move.y, State.current_turn)
+      if win then
+        score:increase_flags(0, 1)
+      else
+        change_turn()
+      end
+    end
+
+    refresh_score()
+    onFinish()
+  end)
+end
+
+local function cat_turn()
+  if State.state == states.ai_moving then
+    return
+  end
+
   local board = State.board
-  local score = State.score
+  local cat = State.cat
 
-  if move == nil then
-    error("Error getting the move")
-    return
-  end
-
-  print("Move " .. usagi.to_json(move))
-
-  if move.move == "uncover" then
-    board:open(move.x, move.y)
+  if input.key_pressed(input.KEY_Q) then
+    uncover_cell()
     change_turn()
-    return
   end
 
-  if move.move == "flag" then
-    local win = board:add_flag(move.x, move.y)
+  if input.key_pressed(input.KEY_W) then
+    local win = board:add_flag(cat.x, cat.y, State.current_turn)
+    refresh_score()
+
     if win then
-      score:increase_flags(0, 1)
+      State.score:increase_flags(1, 0)
     else
       change_turn()
     end
   end
-
-  refresh_score()
 end
 
+local function ai_turn()
+  if State.state == states.ai_moving then
+    return
+  end
+
+  State.state = states.ai_moving
+  AI_move(function()
+    State.state = states.playing
+  end)
+end
 
 local function update_game(dt)
   local board = State.board;
@@ -145,33 +185,17 @@ local function update_game(dt)
   local score = State.score;
 
   if State.current_turn == turns.cat then
-    if input.key_pressed(input.KEY_Q) then
-      uncover_cell()
-      change_turn()
-    end
-
-    if input.key_pressed(input.KEY_W) then
-      local win = board:add_flag(cat.x, cat.y)
-      refresh_score()
-
-      if win then
-        State.score:increase_flags(1, 0)
-      else
-        change_turn()
-      end
-    end
+    cat_turn()
   end
 
-  if not footer:user_is_solving() then
-    cat:update(dt)
+  if State.current_turn == turns.ia then
+    ai_turn()
   end
+
+  cat:update(dt)
   board:update(dt)
   footer:update(dt)
   score:update(dt)
-
-  if State.current_turn == turns.ia then
-    AI_move()
-  end
 end
 
 local function update_menu()
@@ -187,13 +211,15 @@ function _update(dt)
 end
 
 local function draw_game()
-  if State.game_over then
-    draw_game_over()
-  end
   State.board:draw_board()
   State.cat:draw()
   State.footer:draw()
   State.score:draw()
+  State.ai:draw()
+
+  if State.game_over then
+    draw_game_over()
+  end
 end
 
 local function draw_menu()

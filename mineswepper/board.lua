@@ -25,6 +25,7 @@ function Board.create_cell(x, y)
     open = false,
     mine = false,
     flag = false,
+    open_by = "",
     explosion = Explosion:new(x, y)
   }
 
@@ -86,6 +87,7 @@ function Board:get_neightbors(x, y)
     local tx = cell.x + d[2]
     local ty = cell.y + d[1]
 
+
     if is_valid_index(tx, ty) then
       table.insert(res, self.cells[ty][tx])
     end
@@ -116,13 +118,14 @@ function Board:set_sums()
   end
 end
 
-function Board:open_cell(cell)
+function Board:open_cell(cell, player)
   cell.open = true
   cell.flag = false
   cell.explosion:start()
+  cell.open_by = player
 end
 
-function Board:open_recursive(x, y)
+function Board:open_recursive(x, y, player)
   local neightbors = self:get_neightbors(x, y)
   for i, n in pairs(neightbors) do
     if n.mine then
@@ -133,45 +136,56 @@ function Board:open_recursive(x, y)
       goto continue
     end
 
-    self:open_cell(n)
+    self:open_cell(n, player)
     if n.value == 0 then
-      self:open_recursive(n.x, n.y)
+      self:open_recursive(n.x, n.y, player)
     end
 
     ::continue::
   end
 end
 
-function Board:add_flag(x, y)
+function Board:add_flag(x, y, player)
   local cell =self.cells[y][x];
-  if cell.open or cell.flag then
-    return false
-  end
 
-  if cell.mine then
+  if cell.mine and not cell.flag then
     cell.flag = true
+    cell.open_by = player
     sfx.play("flag")
     return true
   end
 
+  sfx.play("error")
   return false
 end
 
-function Board:open(x, y)
+local function get_color(player)
+  if player == "cat" then
+    return gfx.COLOR_BROWN
+  end
+
+  if player == "ai" then
+    return gfx.COLOR_DARK_PURPLE
+  end
+
+  return gfx.COLOR_DARK_BLUE
+end
+
+function Board:open(x, y, player)
   local cell = self.cells[y][x];
 
   if cell.mine then
     self:open_mine()
   else
-    self:open_non_mine(cell)
+    self:open_non_mine(cell, player)
   end
 end
 
-function Board:open_non_mine(cell)
-  self:open_cell(cell)
+function Board:open_non_mine(cell, player)
+  self:open_cell(cell, player)
 
   if cell.value == 0 then
-    self:open_recursive(cell.x, cell.y)
+    self:open_recursive(cell.x, cell.y, player)
   end
 end
 
@@ -202,12 +216,21 @@ function Board:draw_cell(cell)
 
   cell.explosion:draw()
 
+  local color = get_color(cell.open_by)
   gfx.rect(
     sx,
     sy,
     CELL_SIZE,
     CELL_SIZE,
     gfx.COLOR_PEACH
+  )
+
+  gfx.rect_fill(
+    sx,
+    sy,
+    CELL_SIZE - 1,
+    CELL_SIZE - 1,
+    color
   )
 
   local px = sx + CELL_SIZE / 2 - 5;
@@ -234,7 +257,7 @@ function Board:draw_cell(cell)
   end
 
   if cell.flag then
-    gfx.spr(9,
+    gfx.spr(13,
       px - 10,
       py + 3 
     )
