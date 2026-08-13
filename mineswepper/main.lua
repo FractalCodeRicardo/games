@@ -13,7 +13,7 @@ local MINES = Constants.MINES;
 local states = {
   menu = "menu",
   playing = "playing",
-  ai_moving = "ai_moving"
+  waiting = "waiting"
 }
 
 local modes = {
@@ -74,6 +74,38 @@ local function draw_game_over()
     gfx.COLOR_RED, 1)
 end
 
+local function is_waiting()
+  return State.state == states.waiting
+end
+
+local function wait()
+  State.state = states.waiting
+end
+
+local function resume()
+  State.state = states.playing
+  State.delay_time = nil
+end
+
+local function delay(miliseconds)
+  State.state = states.waiting
+  State.delay_time = miliseconds
+end
+
+local function handle_waiting(dt)
+  if State.delay_time == nil then
+    return
+  end
+
+  local new_time = State.delay_time - dt * 1000;
+  if new_time < 0 then
+    resume()
+  else
+    State.delay_time = new_time
+  end
+end
+
+
 local function refresh_score()
   local score = State.board:get_score()
   State.score:update_score(score)
@@ -97,11 +129,12 @@ local function uncover_cell()
 
   board:open(cat.x, cat.y, State.current_turn)
   refresh_score()
+  delay(1000)
 end
 
 local function change_turn()
   if State.current_turn == turns.cat then
-    State.current_turn = turns.ia
+    State.current_turn = turns.ai
   else
     State.current_turn = turns.cat
   end
@@ -143,7 +176,7 @@ local function AI_move(onFinish)
 end
 
 local function cat_turn()
-  if State.state == states.ai_moving then
+  if State.state == states.waiting then
     return
   end
 
@@ -168,14 +201,27 @@ local function cat_turn()
 end
 
 local function ai_turn()
-  if State.state == states.ai_moving then
+  if is_waiting() then
     return
   end
 
-  State.state = states.ai_moving
+  wait()
   AI_move(function()
-    State.state = states.playing
+    resume()
   end)
+end
+
+local function evaluate_finishing()
+  local board = State.board
+
+  local winner = board:get_winner()
+
+  if winner == nil then
+    return
+  end
+
+  State.game_over = true
+  State.winner = winner
 end
 
 local function update_game(dt)
@@ -188,7 +234,7 @@ local function update_game(dt)
     cat_turn()
   end
 
-  if State.current_turn == turns.ia then
+  if State.current_turn == turns.ai then
     ai_turn()
   end
 
@@ -196,6 +242,8 @@ local function update_game(dt)
   board:update(dt)
   footer:update(dt)
   score:update(dt)
+  handle_waiting(dt)
+  evaluate_finishing()
 end
 
 local function update_menu()

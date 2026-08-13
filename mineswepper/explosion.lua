@@ -31,9 +31,12 @@ function Explosion:draw()
 
   local sx = (self.x -1) * Constans.CELL_SIZE;
   local sy = (self.y -1) * Constans.CELL_SIZE;
-
   local frame = frames[frameIndex+1]
-  gfx.spr(frame, sx, sy)
+
+  if frame ~= nil then
+    print(frame)
+    gfx.spr(frame, sx, sy)
+  end
 
 end
 

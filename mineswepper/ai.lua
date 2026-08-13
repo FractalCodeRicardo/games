@@ -3,7 +3,7 @@ local AI = {}
 
 function AI.create_input(board)
   local request = {
-    model = "gpt-5.4-mini",
+    model = "gpt-5.6-sol",
     instructions = [[
 You are playing Minesweeper.
 
@@ -15,6 +15,7 @@ RULES:
 - Never uncover a cell that you know contains a mine.
 - Prefer moves that are logically guaranteed to be safe.
 - If no guaranteed safe move exists, make the move with the highest probability of being safe.
+- To win you have to put a flag in each mine
 
 COORDINATES:
 - x = column
@@ -128,7 +129,19 @@ function AI.get_move(cells, callback)
   file:close()
 
   local json = usagi.read_json("response.json")
-  local content = json.output[1].content[1]
+  -- local content = json.output[1].content[1]
+  local content = nil
+  for i = 1, #(json.output) do
+    local output = json.output[i]
+    if output.type == "message" then
+      content = output.content[1]
+    end
+  end
+
+  if content == nil then
+    error("Error parsing response")
+  end
+
   local text_split = split(content.text, ",")
 
   local move = {
@@ -138,7 +151,7 @@ function AI.get_move(cells, callback)
   }
 
   print("Move:")
-  print(usagi.to_json(move))
+  print(content.text)
 
   callback(move)
 end

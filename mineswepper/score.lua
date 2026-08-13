@@ -27,6 +27,13 @@ function Score:draw()
   self:draw_bar(80, self.openMines, self.totalMines, "Mines")
 
   self:draw_seconds()
+  self:draw_flags(120, "Your score:", self.cat_flags)
+  self:draw_flags(160, "AI score:", self.ia_flags)
+end
+
+function Score:draw_flags(y, text, score)
+  gfx.text(text,start + 10, y, gfx.COLOR_WHITE)
+  gfx.text(score .. "", start + 10 , y + 15, gfx.COLOR_WHITE)
 end
 
 function Score:draw_bar(y, progress, total, title)
@@ -76,7 +83,7 @@ end
 
 function Score:increase_flags(cat, ia)
   self.cat_flags += cat
-  self.ia_flags = ia
+  self.ia_flags += ia
 end
 
 return Score

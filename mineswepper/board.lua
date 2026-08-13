@@ -64,6 +64,11 @@ function Board:set_mines()
     local x = math.random(1, SIZE)
     local y = math.random(1, SIZE)
 
+    while (self.cells[y][x].mine) do
+      x = math.random(1, SIZE)
+      y = math.random(1, SIZE)
+    end
+
     self.cells[y][x].mine = true
   end
 end
@@ -146,7 +151,7 @@ function Board:open_recursive(x, y, player)
 end
 
 function Board:add_flag(x, y, player)
-  local cell =self.cells[y][x];
+  local cell = self.cells[y][x];
 
   if cell.mine and not cell.flag then
     cell.flag = true
@@ -175,7 +180,7 @@ function Board:open(x, y, player)
   local cell = self.cells[y][x];
 
   if cell.mine then
-    self:open_mine()
+    self:open_mine(x, y, player)
   else
     self:open_non_mine(cell, player)
   end
@@ -189,9 +194,9 @@ function Board:open_non_mine(cell, player)
   end
 end
 
-function Board:open_mine()
-  self:open_all()
-  State.game_over = true;
+function Board:open_mine(x, y, player)
+  self.cells[y][x].open_by = player
+  self.cells[y][x].open = true
 end
 
 function Board:open_all()
@@ -214,7 +219,6 @@ function Board:draw_cell(cell)
   local sx = (cell.x - 1) * CELL_SIZE
   local sy = (cell.y - 1) * CELL_SIZE
 
-  cell.explosion:draw()
 
   local color = get_color(cell.open_by)
   gfx.rect(
@@ -259,9 +263,11 @@ function Board:draw_cell(cell)
   if cell.flag then
     gfx.spr(13,
       px - 10,
-      py + 3 
+      py + 3
     )
   end
+
+  cell.explosion:draw()
 end
 
 function Board:draw_board()
@@ -280,23 +286,57 @@ function Board:get_score()
       local cell = self.cells[y][x]
 
       if cell.open then
-        opens +=1
+        opens += 1
       end
 
       if cell.flag then
         flags += 1
       end
-
     end
   end
 
-  return  {
+  return {
     totalSquares = SIZE * SIZE,
     openSquares = opens,
     totalMines = Constants.MINES,
     openMines = flags
   }
+end
 
+function Board:get_winner()
+  local cat = 0
+  local ai = 0
+  for y = 1, SIZE do
+    for x = 1, SIZE do
+      local cell = self.cells[y][x]
+
+      if cell.mine and cell.open and cell.open_by == "cat" then
+        return "ai"
+      end
+
+      if cell.mine and cell.open and cell.open_by == "ai" then
+        return "cat"
+      end
+
+      if cell.flag and cell.mine and cell.open_by == "cat" then
+        cat += 1
+      end
+
+      if cell.flag and cell.mine and cell.open_by == "ai" then
+        ai += 1
+      end
+    end
+  end
+
+  if cat + ai == Constants.MINES then
+    if cat > ai then
+      return "cat"
+    else
+      return "ai"
+    end
+  end
+
+  return nil
 end
 
 return Board

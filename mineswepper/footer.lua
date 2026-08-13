@@ -19,7 +19,6 @@ function Footer:new()
   return instance
 end
 
-
 function Footer:draw_problem()
   if self.selection == nil then
     return
@@ -30,21 +29,47 @@ function Footer:draw_problem()
   self:draw_answers()
 end
 
+local function get_sprite()
+  if State.current_turn == "ai" then
+    return 9
+  else
+    return 1
+  end
+end
+
+local function get_description_turn()
+  if State.game_over then
+    if State.winner == "cat" then
+      return "You win!"
+    else
+      return "You lose!"
+    end
+  end
+
+  if State.current_turn == "ai" then
+    return "AI is moving"
+  else
+    return "Your turn"
+  end
+end
+
 function Footer:draw_waiting()
+  local sprite = get_sprite()
+  local description = get_description_turn()
+
   self:draw_border()
-  gfx.spr_ex(1, 15, start_answers,
-  false,
-  false, self.dt, 0, 1
+  gfx.spr_ex(sprite, 15, start_answers,
+    false,
+    false, self.dt, 0, 1
   )
 
-  gfx.text_ex("Let's Code!",
+  gfx.text_ex(description,
     50,
     start_answers,
     2,
     0,
     gfx.COLOR_WHITE,
     1)
-
 end
 
 function Footer:draw()
@@ -56,7 +81,7 @@ function Footer:draw()
 end
 
 function Footer:draw_border()
-  local w =usagi.GAME_W - 10
+  local w = usagi.GAME_W - 10
   local h = 45 + #self.selection.options * 21
   gfx.rect_fill(5, start - 5, w, h, gfx.COLOR_BLACK)
   gfx.rect_ex(5, start - 5, w, h, 1, gfx.COLOR_PEACH)
@@ -69,7 +94,6 @@ function Footer:draw_description()
 end
 
 function Footer:draw_answers()
-
   local line = 0
   for i, e in pairs(self.selection.options) do
     local text = string.format("%i", e)
