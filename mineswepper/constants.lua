@@ -8,6 +8,12 @@ Constants.BOTTOM_SIZE = 200
 Constants.SCORE_SIZE = 110
 Constants.SECONDS = 5 * 60
 
+Constants.states = {
+  menu = "menu",
+  playing = "playing",
+  waiting = "waiting"
+}
+
 Constants.get_screen_height = function()
   return Constants.BOARD_SIZE * Constants.CELL_SIZE + Constants.BOTTOM_SIZE;
 end

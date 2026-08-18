@@ -1,20 +1,17 @@
 local Constants = require("constants")
 local Board = require("board")
-local Cat = require("cat")
+local Player = require("player")
 local Footer = require("footer")
 local Score = require("score")
 local Menu = require("menu")
 local AI = require("ai")
+local Timer = require("timer")
 
 local SIZE = Constants.BOARD_SIZE;
 local CELL_SIZE = Constants.CELL_SIZE;
 local MINES = Constants.MINES;
+local states = Constants.states;
 
-local states = {
-  menu = "menu",
-  playing = "playing",
-  waiting = "waiting"
-}
 
 local modes = {
   solve_problems = "solve_problems",
@@ -42,8 +39,8 @@ function _init()
   local y = math.floor(SIZE / 2)
   local x = math.floor(SIZE / 2)
   local board = Board:new()
-  local cat = Cat:new("me", x - 1, y, 1)
-  local ai = Cat:new("ai", x + 1, y, 9)
+  local cat = Player:new("me", x - 1, y, 1)
+  local ai = Player:new("ai", x + 1, y, 9)
 
   Menu.on_start = function()
     State.state = "game"
@@ -74,36 +71,6 @@ local function draw_game_over()
     gfx.COLOR_RED, 1)
 end
 
-local function is_waiting()
-  return State.state == states.waiting
-end
-
-local function wait()
-  State.state = states.waiting
-end
-
-local function resume()
-  State.state = states.playing
-  State.delay_time = nil
-end
-
-local function delay(miliseconds)
-  State.state = states.waiting
-  State.delay_time = miliseconds
-end
-
-local function handle_waiting(dt)
-  if State.delay_time == nil then
-    return
-  end
-
-  local new_time = State.delay_time - dt * 1000;
-  if new_time < 0 then
-    resume()
-  else
-    State.delay_time = new_time
-  end
-end
 
 
 local function refresh_score()
@@ -129,7 +96,7 @@ local function uncover_cell()
 
   board:open(cat.x, cat.y, State.current_turn)
   refresh_score()
-  delay(1000)
+  Timer.delay(1000)
 end
 
 local function change_turn()
@@ -176,7 +143,7 @@ local function AI_move(onFinish)
 end
 
 local function cat_turn()
-  if State.state == states.waiting then
+  if Timer.is_waiting() then
     return
   end
 
@@ -201,13 +168,13 @@ local function cat_turn()
 end
 
 local function ai_turn()
-  if is_waiting() then
+  if Timer.is_waiting() then
     return
   end
 
-  wait()
+  Timer.wait()
   AI_move(function()
-    resume()
+    Timer.resume()
   end)
 end
 
@@ -242,7 +209,7 @@ local function update_game(dt)
   board:update(dt)
   footer:update(dt)
   score:update(dt)
-  handle_waiting(dt)
+  Timer.handle_waiting(dt)
   evaluate_finishing()
 end
 

@@ -3,38 +3,38 @@ local SIZE = Constants.BOARD_SIZE;
 
 local stop_when_time = 0.6
 
-local Cat = {}
-Cat.__index = Cat
+local Player = {}
+Player.__index = Player
 
-function Cat:new(name, x, y, baseSprite)
-  local cat = setmetatable({}, Cat)
-  cat.x = x or math.floor(SIZE / 2)
-  cat.y = x or math.floor(SIZE / 2)
-  cat.sprite = baseSprite
-  cat.baseSprite = baseSprite
-  cat.moving_time = 0
-  cat.moving = false
-  cat.name = name or "unnamed"
-  return cat
+function Player:new(name, x, y, baseSprite)
+  local player = setmetatable({}, Player)
+  player.x = x or math.floor(SIZE / 2)
+  player.y = x or math.floor(SIZE / 2)
+  player.sprite = baseSprite
+  player.baseSprite = baseSprite
+  player.moving_time = 0
+  player.moving = false
+  player.name = name or "unnamed"
+  return player
 end
 
-function Cat:bottomSprite()
+function Player:bottomSprite()
   return self.baseSprite
 end
 
-function Cat:upSprite()
+function Player:upSprite()
   return self.baseSprite + 1
 end
 
-function Cat:rightSprite()
+function Player:rightSprite()
   return self.baseSprite + 2
 end
 
-function Cat:leftSprite()
+function Player:leftSprite()
   return self.baseSprite + 3
 end
 
-function Cat:draw()
+function Player:draw()
   local sx = (self.x - 1) * Constants.CELL_SIZE;
   local sy = (self.y - 1) * Constants.CELL_SIZE;
 
@@ -44,7 +44,7 @@ function Cat:draw()
   )
 end
 
-function Cat:move(x, y)
+function Player:move(x, y)
   local nx = self.x + x
   local ny = self.y + y
 
@@ -61,7 +61,7 @@ local function play_jump()
   sfx.play("jump")
 end
 
-function Cat:left(dt)
+function Player:left(dt)
   self:move(-1, 0)
   self.sprite = self:leftSprite()
   self.moving = true
@@ -69,7 +69,7 @@ function Cat:left(dt)
   play_jump()
 end
 
-function Cat:right(dt)
+function Player:right(dt)
   self:move(1, 0)
   self.sprite = self:rightSprite()
   self.moving = true
@@ -77,7 +77,7 @@ function Cat:right(dt)
   play_jump()
 end
 
-function Cat:down(dt)
+function Player:down(dt)
   self:move(0, 1)
   self.sprite = self:bottomSprite()
   self.moving = true
@@ -85,7 +85,7 @@ function Cat:down(dt)
   play_jump()
 end
 
-function Cat:up(dt)
+function Player:up(dt)
   self:move(0, -1)
   self.sprite = self:upSprite()
   self.moving = true
@@ -93,7 +93,7 @@ function Cat:up(dt)
   play_jump()
 end
 
-function Cat:update(dt)
+function Player:update(dt)
   self:handle_keys()
 
   if self.moving then
@@ -107,7 +107,8 @@ function Cat:update(dt)
   end
 end
 
-function Cat:handle_keys()
+
+function Player:handle_keys()
   if input.key_released(input.KEY_RIGHT) then
     self:right()
   end
@@ -125,7 +126,7 @@ function Cat:handle_keys()
   end
 end
 
-function Cat:move_to(x, y)
+function Player:move_to(x, y)
   local dx = math.abs(self.x - x)
   local dy = math.abs(self.y - y)
   while dx >= 2 or dy >= 2 do
@@ -151,4 +152,4 @@ function Cat:move_to(x, y)
   end
 end
 
-return Cat
+return Player

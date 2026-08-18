@@ -156,4 +156,7 @@ function AI.get_move(cells, callback)
   callback(move)
 end
 
+function AI.update()
+end
+
 return AI
