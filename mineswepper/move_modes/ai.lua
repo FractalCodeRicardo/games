@@ -1,7 +1,14 @@
 local Constants = require("constants")
-local AI = {}
 
-function AI.create_input(board)
+local AI = {}
+AI.__index = AI
+
+function AI.new()
+  local instance = setmetatable({}, AI)
+  return instance
+end
+
+function AI:create_input(board)
   local request = {
     model = "gpt-5.6-sol",
     instructions = [[
@@ -41,8 +48,8 @@ Do not output anything else.
   return json
 end
 
-function AI.send_request(board)
-  local json = AI.create_input(board)
+function AI:send_request(board)
+  local json = self:create_input(board)
   local command = string.format(
     'curl -s https://api.openai.com/v1/responses ' ..
     '-H "Content-Type: application/json" ' ..
@@ -87,7 +94,7 @@ local function cell_as_string(cell)
   return value
 end
 
-function AI.board_as_string(cells)
+function AI:board_as_string(cells)
   local size = Constants.BOARD_SIZE
   local board = ""
   for y = 1, size do
@@ -112,12 +119,12 @@ function AI.board_as_string(cells)
   return board
 end
 
-function AI.get_move(cells, callback)
-  local board = AI.board_as_string(cells)
+function AI:get_move(cells, callback)
+  local board = self:board_as_string(cells)
 
   print("Sending request...")
   print(board)
-  local res = AI.send_request(board)
+  local res = self.send_request(board)
 
   local file = io.open("data/response.json", "w")
 
@@ -156,7 +163,7 @@ function AI.get_move(cells, callback)
   callback(move)
 end
 
-function AI.update()
+function AI:update()
 end
 
 return AI

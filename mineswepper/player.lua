@@ -1,5 +1,6 @@
 local Constants = require("constants")
 local SIZE = Constants.BOARD_SIZE;
+local keyboard_mode = require("move_modes.keyboard")
 
 local stop_when_time = 0.6
 
@@ -15,6 +16,7 @@ function Player:new(name, x, y, baseSprite)
   player.moving_time = 0
   player.moving = false
   player.name = name or "unnamed"
+  player.mode = keyboard_mode.new(player)
   return player
 end
 
@@ -44,7 +46,7 @@ function Player:draw()
   )
 end
 
-function Player:move(x, y)
+function Player:move_player(x, y)
   local nx = self.x + x
   local ny = self.y + y
 
@@ -62,7 +64,7 @@ local function play_jump()
 end
 
 function Player:left(dt)
-  self:move(-1, 0)
+  self:move_player(-1, 0)
   self.sprite = self:leftSprite()
   self.moving = true
   self.moving_time = 0
@@ -70,7 +72,7 @@ function Player:left(dt)
 end
 
 function Player:right(dt)
-  self:move(1, 0)
+  self:move_player(1, 0)
   self.sprite = self:rightSprite()
   self.moving = true
   self.moving_time = 0
@@ -78,7 +80,7 @@ function Player:right(dt)
 end
 
 function Player:down(dt)
-  self:move(0, 1)
+  self:move_player(0, 1)
   self.sprite = self:bottomSprite()
   self.moving = true
   self.moving_time = 0
@@ -86,7 +88,7 @@ function Player:down(dt)
 end
 
 function Player:up(dt)
-  self:move(0, -1)
+  self:move_player(0, -1)
   self.sprite = self:upSprite()
   self.moving = true
   self.moving_time = 0
@@ -104,25 +106,6 @@ function Player:update(dt)
     self.moving = false
     self.moving_time = true
     self.sprite = self.baseSprite
-  end
-end
-
-
-function Player:handle_keys()
-  if input.key_released(input.KEY_RIGHT) then
-    self:right()
-  end
-
-  if input.key_pressed(input.KEY_LEFT) then
-    self:left()
-  end
-
-  if input.key_pressed(input.KEY_UP) then
-    self:up()
-  end
-
-  if input.key_pressed(input.KEY_DOWN) then
-    self:down()
   end
 end
 
@@ -150,6 +133,10 @@ function Player:move_to(x, y)
     dx = math.abs(self.x - x)
     dy = math.abs(self.y - y)
   end
+end
+
+function Player:move(on_move)
+  self.mode:move(on_move)
 end
 
 return Player
