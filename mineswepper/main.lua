@@ -62,12 +62,27 @@ local function openAI_players()
     return { p1, p2 }
 end
 
+
+local function openAI_vs_jev_players()
+    local y = math.floor(SIZE / 2)
+    local x = math.floor(SIZE / 2)
+    local ai_mode = AI:new()
+    local jev = JEV:new()
+    local p1 = Player:new("Jev", x - 1, y - 1, 1, {
+        mode = jev
+    })
+    local p2 = Player:new("Open AI", x + 1, y + 1, 9, {
+        mode = ai_mode
+    })
+    return { p1, p2 }
+end
+
 function _init()
     local board = Board:new()
 
     -- local players = keyboard_players()
     -- local players = openAI_players()
-    local players = jev_players()
+    local players = openAI_vs_jev_players()
 
     Menu.on_start = function()
         State.state = "game"
@@ -129,6 +144,17 @@ local function evaluate_finishing()
     if scores.player_open_mine ~= nil then
         State.game_over = true
         State.winner = board:get_winner()
+
+        -- get_winner() returns nil when the mine-opener is the only
+        -- player with scored cells; in that case the opponent wins.
+        if State.winner == nil then
+            for _, p in ipairs(State.players) do
+                if p.id ~= scores.player_open_mine then
+                    State.winner = p.id
+                    break
+                end
+            end
+        end
         return
     end
 

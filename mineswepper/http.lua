@@ -55,7 +55,6 @@ M.update = function()
     end
 
     local content = FILE.read(res_file)
-    FILE.write("temp.json", content) 
     local res = JSON.decode(content)
 
     local ok, err = pcall(function()

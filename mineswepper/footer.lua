@@ -39,7 +39,11 @@ end
 
 local function get_description_turn()
     if State.game_over then
-        local winner = Player.get_by_id(State.winner) 
+        local winner = Player.get_by_id(State.winner)
+
+        if winner == nil then
+            return "GAME OVER"
+        end
 
         return "WINNER: " ..  winner.name
     end

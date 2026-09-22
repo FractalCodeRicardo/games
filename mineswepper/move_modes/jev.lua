@@ -15,9 +15,9 @@ function M.create_rules()
         "A flagged cell is believed to contain a mine.",
         "A covered cell is unknown.",
         "Never uncover a cell known to contain a mine.",
-        "Prefer logically guaranteed safe moves.",
+        "Prefer flag cells where there is a mine, and then logically guaranteed safe moves.",
         "If no guaranteed safe move exists, choose the move with the highest probability of being safe.",
-        "To win, every mine must be flagged."
+        "To win, you need to place as much flags as you can."
     }
 end
 
@@ -25,8 +25,8 @@ function M.create_instructions()
     return [[
 Choose the best next move in the Minesweeper board.
 
-Prefer a move that is logically guaranteed to be safe.
-Never choose a cell that is known to contain a mine.
+Prefer flag cells where there is a mine, and then logically guaranteed safe moves.
+Never uncover a cell that is known to contain a mine.
 If no guaranteed safe move exists, choose the covered cell with the highest probability of being safe.
 
 Return exactly one of the available moves.

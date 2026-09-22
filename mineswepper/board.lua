@@ -174,7 +174,7 @@ local function get_color(player_id)
 
     local colors = {
         gfx.COLOR_BROWN,
-        gfx.COLOR_DARK_PURPLE,
+        gfx.COLOR_YELLOW,
         gfx.COLOR_PEACH
     };
 
