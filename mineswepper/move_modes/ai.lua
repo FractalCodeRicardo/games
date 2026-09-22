@@ -1,17 +1,18 @@
-local Constants = require("constants")
+local utils = require("utils")
+local http = require("http")
+local M = {}
+M.__index = M
 
-local AI = {}
-AI.__index = AI
-
-function AI.new()
-  local instance = setmetatable({}, AI)
-  return instance
+function M.new()
+    local instance = setmetatable({}, M)
+    return instance
 end
 
-function AI:create_input(board)
-  local request = {
-    model = "gpt-5.6-sol",
-    instructions = [[
+function M:create_input(board)
+    print("Creating request")
+    local request = {
+        model = "gpt-5.6-sol",
+        instructions = [[
 You are playing Minesweeper.
 
 RULES:
@@ -40,130 +41,80 @@ flag,x,y
 Do not explain your decision.
 Do not output anything else.
 ]],
-    input = board
-  }
+        input = board
+    }
 
-  local json = usagi.to_json(request)
+    print(request)
+    local json = usagi.to_json(request)
 
-  return json
+    return json
 end
 
-function AI:send_request(board)
-  local json = self:create_input(board)
-  local command = string.format(
-    'curl -s https://api.openai.com/v1/responses ' ..
-    '-H "Content-Type: application/json" ' ..
-    '-H "Authorization: Bearer %s" ' ..
-    '-d %q',
-    os.getenv("OPENAI_API_KEY"),
-    json
-  )
+function M:send_request(board)
+    local json = self:create_input(board)
+    local command = string.format(
+        'curl -s https://api.openai.com/v1/responses ' ..
+        '-H "Content-Type: application/json" ' ..
+        '-H "Authorization: Bearer %s" ' ..
+        '-d %q',
+        os.getenv("OPENAI_API_KEY"),
+        json
+    )
 
-  local handle = io.popen(command)
+    local handle = io.popen(command)
 
-  if handle == nil then
-    error("Error on io.popen")
-    return
-  end
-
-  local response = handle:read("*a")
-  handle:close()
-
-  return response
-end
-
-local function split(inputstr, sep)
-  local t = {}
-  for str in string.gmatch(inputstr, "([^" .. sep .. "]+)") do
-    table.insert(t, str)
-  end
-  return t
-end
-
-local function cell_as_string(cell)
-  local value = "x"
-
-  if cell.open then
-    value = cell.value .. ""
-  end
-
-  if cell.flag then
-    value = "f"
-  end
-
-  return value
-end
-
-function AI:board_as_string(cells)
-  local size = Constants.BOARD_SIZE
-  local board = ""
-  for y = 1, size do
-    local line = ""
-    for x = 1, size do
-      local cell = cells[y][x]
-      local value = cell_as_string(cell)
-
-      line = line .. value
-
-      if x ~= size then
-        line = line .. ","
-      end
+    if handle == nil then
+        error("Error on io.popen")
+        return
     end
 
-    board = board .. line
-    if y ~= size then
-      board = board .. "\n"
+    local response = handle:read("*a")
+    handle:close()
+
+    return response
+end
+
+function M.parse_move(json)
+    local content = nil
+    print(json)
+    for i = 1, #(json.output) do
+        local output = json.output[i]
+        if output.type == "message" then
+            content = output.content[1]
+        end
     end
-  end
 
-  return board
-end
-
-function AI:get_move(cells, callback)
-  local board = self:board_as_string(cells)
-
-  print("Sending request...")
-  print(board)
-  local res = self.send_request(board)
-
-  local file = io.open("data/response.json", "w")
-
-  if file == nil then
-    error("Error opening file")
-  end
-
-  file:write(res)
-  file:close()
-
-  local json = usagi.read_json("response.json")
-  -- local content = json.output[1].content[1]
-  local content = nil
-  for i = 1, #(json.output) do
-    local output = json.output[i]
-    if output.type == "message" then
-      content = output.content[1]
+    if content == nil then
+        error("Error parsing response")
     end
-  end
 
-  if content == nil then
-    error("Error parsing response")
-  end
+    local text_split = utils.split(content.text, ",")
 
-  local text_split = split(content.text, ",")
+    local move = {
+        move = text_split[1],
+        x = tonumber(text_split[2]),
+        y = tonumber(text_split[3]),
+    }
 
-  local move = {
-    move = text_split[1],
-    x = tonumber(text_split[2]),
-    y = tonumber(text_split[3]),
-  }
+    print("Move:")
+    print(content.text)
 
-  print("Move:")
-  print(content.text)
-
-  callback(move)
+    return move
 end
 
-function AI:update()
+function M:move(on_move, cells)
+    local board = utils.board_as_string(cells)
+    local json = self:create_input(board)
+
+    local url ="https://api.openai.com/v1/responses"
+    local key = os.getenv("OPENAI_API_KEY")
+    http.get(url, key, json, function(res)
+        local move = M.parse_move(res)
+        on_move(move)
+    end)
 end
 
-return AI
+function M:update()
+end
+
+return M

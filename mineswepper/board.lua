@@ -344,6 +344,15 @@ function Board:get_winner()
     local winner = nil
     local score = 0
 
+    local game_has_not_finish = 
+        all_scores.player_open_mine == nil and 
+        all_scores.totalMines > all_scores.openMines
+
+    if game_has_not_finish then
+        return nil
+    end
+
+
     for key, value in pairs(scores) do
 
         if key == all_scores.player_open_mine then

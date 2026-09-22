@@ -53,7 +53,7 @@ function Keyboard:handle_keys()
   end
 end
 
-function Keyboard:move(on_move)
+function Keyboard:move(on_move, cells)
   self.block_events = false
   self.on_move = on_move
 end

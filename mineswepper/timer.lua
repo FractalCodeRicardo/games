@@ -22,6 +22,7 @@ function Timer.delay(miliseconds)
   State.delay_time = miliseconds
 end
 
+
 function Timer.handle_waiting(dt)
   if State.delay_time == nil then
     return

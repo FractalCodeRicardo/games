@@ -1,5 +1,5 @@
 local Constans = require("constants")
-local Sound = require ("explosion")
+local Sound = require ("sound")
 
 local Explosion = {}
 

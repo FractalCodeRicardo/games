@@ -1,10 +1,8 @@
 local M = {}
-local enabled = false
+local enabled = true
 
 M.jump = function()
     if not enabled then return end
-
-
     sfx.play("jump")
 end
 
