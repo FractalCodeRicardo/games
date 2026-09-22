@@ -1,4 +1,5 @@
 local Constans = require("constants")
+local Sound = require ("explosion")
 
 local Explosion = {}
 
@@ -34,7 +35,6 @@ function Explosion:draw()
   local frame = frames[frameIndex+1]
 
   if frame ~= nil then
-    print(frame)
     gfx.spr(frame, sx, sy)
   end
 
@@ -56,7 +56,7 @@ end
 
 function Explosion:start()
   self.animate = true
-  sfx.play("explosion")
+  Sound.explosion()
 end
 
 return Explosion

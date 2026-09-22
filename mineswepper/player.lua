@@ -7,7 +7,10 @@ local stop_when_time = 0.6
 local Player = {}
 Player.__index = Player
 
-function Player:new(name, x, y, baseSprite)
+local current_id = 1
+local players = {}
+
+function Player:new( name, x, y, baseSprite)
   local player = setmetatable({}, Player)
   player.x = x or math.floor(SIZE / 2)
   player.y = x or math.floor(SIZE / 2)
@@ -16,7 +19,11 @@ function Player:new(name, x, y, baseSprite)
   player.moving_time = 0
   player.moving = false
   player.name = name or "unnamed"
+  player.id = current_id
+  current_id = current_id + 1
   player.mode = keyboard_mode.new(player)
+
+  players[player.id] = player
   return player
 end
 
@@ -96,7 +103,6 @@ function Player:up(dt)
 end
 
 function Player:update(dt)
-  self:handle_keys()
 
   if self.moving then
     self.moving_time += dt
@@ -107,6 +113,8 @@ function Player:update(dt)
     self.moving_time = true
     self.sprite = self.baseSprite
   end
+
+  self.mode:update(dt)
 end
 
 function Player:move_to(x, y)
@@ -137,6 +145,10 @@ end
 
 function Player:move(on_move)
   self.mode:move(on_move)
+end
+
+function Player.get_by_id(id)
+    return players[id]
 end
 
 return Player

@@ -4,7 +4,6 @@ local Player = require("player")
 local Footer = require("footer")
 local Score = require("score")
 local Menu = require("menu")
-local AI = require("ai")
 local Timer = require("timer")
 
 local SIZE = Constants.BOARD_SIZE;
@@ -14,105 +13,106 @@ local states = Constants.states;
 
 
 local modes = {
-  solve_problems = "solve_problems",
-  vsAI = "vsAI"
-}
-
-local turns = {
-  cat = "cat",
-  ai = "ai"
+    solve_problems = "solve_problems",
+    vsAI = "vsAI"
 }
 
 
 function _config()
-  ---@type Usagi.Config
-  return {
-    name = "Game",
-    game_id = "com.usagiengine.mineswepper",
-    game_height = Constants.get_screen_height(),
-    game_width = Constants.get_screen_width(),
-    sprite_size = Constants.SPRITE_SIZE
-  }
+    ---@type Usagi.Config
+    return {
+        name = "Mineswepper",
+        game_id = "com.usagiengine.mineswepper",
+        game_height = Constants.get_screen_height(),
+        game_width = Constants.get_screen_width(),
+        sprite_size = Constants.SPRITE_SIZE
+    }
 end
 
 function _init()
-  local y = math.floor(SIZE / 2)
-  local x = math.floor(SIZE / 2)
-  local board = Board:new()
-  local cat = Player:new("me", x - 1, y, 1)
-  local ai = Player:new("ai", x + 1, y, 9)
+    local y = math.floor(SIZE / 2)
+    local x = math.floor(SIZE / 2)
+    local board = Board:new()
+    local player1 = Player:new("Player 1", x - 1, y -1, 1)
+    local player2 = Player:new("Player 2", x + 1, y+1, 9)
 
-  Menu.on_start = function()
-    State.state = "game"
-  end
+    Menu.on_start = function()
+        State.state = "game"
+    end
 
-  State = {
-    game_over = false,
-    cat = cat,
-    ai = ai,
-    current_turn = turns.cat,
-    board = board,
-    footer = Footer:new(),
-    score = Score:new(),
-    menu = Menu,
-    state = states.menu,
-    mode = modes.vsAI
-  }
+    local players = {
+        player1, player2
+    }
 
-  -- music.play_ex("music", 0.5, 1.0, 1.0, true)
+
+    State = {
+        game_over = false,
+        players = { player1, player2 },
+        current_index_player = 1,
+        current_player = player1,
+        board = board,
+        footer = Footer:new(),
+        score = Score:new(),
+        menu = Menu,
+        state = states.menu,
+        mode = modes.vsAI
+    }
+
+    -- music.play_ex("music", 0.5, 1.0, 1.0, true)
 end
 
 local function draw_game_over()
-  gfx.text_ex("Game Over",
-    usagi.GAME_W / 2 - 180,
-    usagi.GAME_H / 2 - 130,
-    5,
-    0,
-    gfx.COLOR_RED, 1)
+    gfx.text_ex("Game Over",
+        usagi.GAME_W / 2 - 180,
+        usagi.GAME_H / 2 - 130,
+        5,
+        0,
+        gfx.COLOR_RED, 1)
 end
 
 
 
 local function refresh_score()
-  local score = State.board:get_score()
-  State.score:update_score(score)
+    local score = State.board:get_scores()
+    State.score:update_score(score)
 end
 
-local function uncover_cell()
-  local footer = State.footer
-  local board = State.board
-  local cat = State.cat
 
-  if State.mode == modes.solve_problems then
-    footer:show_problem(function(success)
-      if success then
-        board:open(cat.x, cat.y, State.current_turn)
-        refresh_score()
-      end
-    end)
+local function get_next_turn()
+    local i = State.current_index_player
+    local players = State.players
 
-    return
-  end
+    if i >= #players then
+        return 1
+    end
 
-  board:open(cat.x, cat.y, State.current_turn)
-  refresh_score()
-  Timer.delay(1000)
+    return i + 1
 end
 
 local function change_turn()
-  if State.current_turn == turns.cat then
-    State.current_turn = turns.ai
-  else
-    State.current_turn = turns.cat
-  end
+    local new_index = get_next_turn()
+    State.current_index_player = new_index
+    State.current_player = State.players[new_index]
 end
 
-local function AI_move(onFinish)
-  local cells = State.board.cells
-  local ai = State.ai
-  AI.get_move(cells, function(move)
+
+local function evaluate_finishing()
+    local board = State.board
+
+    local scores = board:get_scores()
+
+    if scores.player_open_mine ~= nil then
+        State.game_over = true
+        State.winner = board:get_winner()
+    end
+
+end
+
+
+local function on_move(move)
     local board = State.board
     local score = State.score
+    local player = State.current_player
 
     if move == nil then
       error("Error getting the move")
@@ -120,133 +120,90 @@ local function AI_move(onFinish)
     end
 
     if move.move == "uncover" then
-      ai:move_to(move.x, move.y)
-      board:open(move.x, move.y, State.current_turn)
+      board:open(move.x, move.y, player.id)
       change_turn()
-      onFinish()
       return
     end
 
     if move.move == "flag" then
-      ai:move_to(move.x, move.y)
-      local win = board:add_flag(move.x, move.y, State.current_turn)
+      local win = board:add_flag(move.x, move.y, player.id)
       if win then
-        score:increase_flags(0, 1)
+        refresh_score()
       else
         change_turn()
       end
     end
 
     refresh_score()
-    onFinish()
+end
+
+local function turn()
+  if Timer.is_waiting() then
+    return
+  end
+
+  local cells = State.board.cells
+  local player = State.current_player
+
+  player:move(function(move)
+      on_move(move)
+      Timer.resume()
   end)
-end
-
-local function cat_turn()
-  if Timer.is_waiting() then
-    return
-  end
-
-  local board = State.board
-  local cat = State.cat
-
-  if input.key_pressed(input.KEY_Q) then
-    uncover_cell()
-    change_turn()
-  end
-
-  if input.key_pressed(input.KEY_W) then
-    local win = board:add_flag(cat.x, cat.y, State.current_turn)
-    refresh_score()
-
-    if win then
-      State.score:increase_flags(1, 0)
-    else
-      change_turn()
-    end
-  end
-end
-
-local function ai_turn()
-  if Timer.is_waiting() then
-    return
-  end
 
   Timer.wait()
-  AI_move(function()
-    Timer.resume()
-  end)
-end
-
-local function evaluate_finishing()
-  local board = State.board
-
-  local winner = board:get_winner()
-
-  if winner == nil then
-    return
-  end
-
-  State.game_over = true
-  State.winner = winner
 end
 
 local function update_game(dt)
-  local board = State.board;
-  local cat = State.cat;
-  local footer = State.footer;
-  local score = State.score;
+    local board = State.board;
+    local footer = State.footer;
+    local score = State.score;
+    local player = State.current_player
 
-  if State.current_turn == turns.cat then
-    cat_turn()
-  end
-
-  if State.current_turn == turns.ai then
-    ai_turn()
-  end
-
-  cat:update(dt)
-  board:update(dt)
-  footer:update(dt)
-  score:update(dt)
-  Timer.handle_waiting(dt)
-  evaluate_finishing()
+    board:update(dt)
+    footer:update(dt)
+    score:update(dt)
+    player:update(dt)
+    evaluate_finishing()
+    turn()
 end
 
 local function update_menu()
-  State.menu.update()
+    State.menu.update()
 end
 
 function _update(dt)
-  if State.state == states.menu then
-    update_menu()
-  else
-    update_game(dt)
-  end
+    if State.state == states.menu then
+        update_menu()
+    else
+        update_game(dt)
+    end
 end
 
 local function draw_game()
-  State.board:draw_board()
-  State.cat:draw()
-  State.footer:draw()
-  State.score:draw()
-  State.ai:draw()
+    local player = State.current_player
+    State.board:draw_board()
+    State.footer:draw()
+    State.score:draw()
+    
+    for _, p in ipairs(State.players) do
+        p:draw()
+    end
 
-  if State.game_over then
-    draw_game_over()
-  end
+    if State.game_over then
+        draw_game_over()
+    end
 end
 
 local function draw_menu()
-  State.menu.draw()
+    State.menu.draw()
 end
 
 function _draw(dt)
-  gfx.clear(gfx.COLOR_DARK_PURPLE)
+    gfx.clear(gfx.COLOR_DARK_PURPLE)
 
-  if State.state == "menu" then
-    draw_menu()
-  else
-    draw_game()
-  end
+    if State.state == "menu" then
+        draw_menu()
+    else
+        draw_game()
+    end
 end

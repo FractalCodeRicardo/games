@@ -5,6 +5,8 @@ function Keyboard.new(player)
   local instance = setmetatable({}, Keyboard)
   instance.player = player
   instance.block_events = true
+  
+  return instance
 end
 
 function Keyboard:update()
