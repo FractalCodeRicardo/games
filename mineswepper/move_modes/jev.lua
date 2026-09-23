@@ -9,27 +9,30 @@ function M.new()
     return instance
 end
 
+-- Facts about the game and how the board text is encoded.
+-- NOTE: adjust the first line below if your board uses different
+-- characters for covered / flagged / revealed cells.
 function M.create_rules()
     return {
-        "A number indicates how many mines are in its 8 neighboring cells.",
-        "A flagged cell is believed to contain a mine.",
-        "A covered cell is unknown.",
-        "Never uncover a cell known to contain a mine.",
-        "Prefer flag cells where there is a mine, and then logically guaranteed safe moves.",
-        "If no guaranteed safe move exists, choose the move with the highest probability of being safe.",
-        "To win, you need to place as much flags as you can."
+ [[
+RULES:
+- You will be provided by a NxN text representing a minesweeper board.
+- A number indicates how many mines are in its 8 neighboring cells.
+- A flagged cell contains a mine (f mark).
+- A covered cell is unknown (x mark).
+- You need to flag the cell the contains a covered mine.
+- In case you can not determine if a covered cell has a mine, uncover a safe cell.
+- You win putting as much flags as you can.
+- You lose if you uncover a cell with a mine.
+]]
     }
 end
 
 function M.create_instructions()
     return [[
-Choose the best next move in the Minesweeper board.
-
-Prefer flag cells where there is a mine, and then logically guaranteed safe moves.
-Never uncover a cell that is known to contain a mine.
-If no guaranteed safe move exists, choose the covered cell with the highest probability of being safe.
-
-Return exactly one of the available moves.
+Choose the move that has high probability to flag a mine, if you can not determine it, just uncover a cell.
+Return exactly one of the moves listed in the available choices below — do not invent
+a move that isn't listed.
 ]]
 end
 
@@ -80,6 +83,15 @@ M.create_moves = function(board)
                     x,
                     y
                 )
+
+
+                move = string.format("flag,%d,%d", x, y)
+
+                moves[move] = string.format(
+                    "Flag in column %d, row %d.",
+                    x,
+                    y
+                )
             end
         end
     end
@@ -96,9 +108,6 @@ M.parse_move= function (json)
     end
 
     local text = answer.choice or answer
-
-    print("----Move:")
-    print(text)
 
     local text_split = utils.split(text, ",")
 
@@ -120,7 +129,7 @@ function M:move(on_move, cells)
     local url ="https://api.typesafe.ai/v1/systemone"
     local key = os.getenv("TYPESAFE_API_KEY")
 
-    http.get(url, key, json, function(res)
+    http.get(url, key, json, {}, function(res)
         local move = M.parse_move(res)
         on_move(move)
     end)

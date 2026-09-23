@@ -11,15 +11,25 @@ local function remove_files()
     FILE.remove(done_file)
 end
 
-M.command = function(url, apikey, body)
+M.command = function(url, apikey, body, opts)
+    opts = opts or {}
+    opts.apiKeyHeader = opts.apiKeyHeader or 
+     (string.format('Authorization: Bearer %s' , apikey))
+    
+    if opts.extraHeader == nil then
+        opts.extraHeader = ""
+    else
+        opts.extraHeader = '-H "' .. opts.extraHeader .. '" '
+    end
+
     local command = string.format(
         'curl -sS %s ' ..
         '-H "Content-Type: application/json" ' ..
-        '-H "Authorization: Bearer %s" ' ..
+        '-H "' .. opts.apiKeyHeader .. '" ' ..
+        opts.extraHeader .. ' ' ..
         ' -o ' .. res_file .. ' ' ..
         '-d %q',
         url,
-        apikey,
         body
     )
 
@@ -28,16 +38,15 @@ M.command = function(url, apikey, body)
     return command
 end
 
-M.get = function(url, apikey, body, callback)
-    print("--- GET " .. url)
+M.get = function(url, apikey, body, opts, callback)
+    print("GET " .. url)
     if M.callback ~= nil then
         error("Only one request peer time for now")
     end
 
     remove_files()
     M.callback = callback
-    local command = M.command(url, apikey, body)
-
+    local command = M.command(url, apikey, body, opts)
 
     local result = os.execute(command)
     if result == nil then

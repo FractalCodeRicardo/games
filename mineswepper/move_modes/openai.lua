@@ -9,21 +9,20 @@ function M.new()
 end
 
 function M:create_input(board)
-    print("Creating request")
     local request = {
         model = "gpt-5.6-sol",
         instructions = [[
 You are playing Minesweeper.
 
 RULES:
+- You will be provided by a NxN text representing a minesweeper board.
 - A number indicates how many mines are in its 8 neighboring cells.
-- A flagged cell is believed to contain a mine.
-- A covered cell is unknown.
-- You can uncover a covered cell or flag a covered cell.
-- Never uncover a cell that you know contains a mine.
-- Prefer moves that are logically guaranteed to be safe.
-- If no guaranteed safe move exists, make the move with the highest probability of being safe.
-- To win you have to put a flag in each mine
+- A flagged cell contains a mine (f mark).
+- A covered cell is unknown (x mark).
+- You need to flag the cell the contains a covered mine.
+- In case you can not determine if a covered cell has a mine, uncover a safe cell.
+- You win putting as much flags as you can.
+- You lose if you uncover a cell with a mine.
 
 COORDINATES:
 - x = column
@@ -44,7 +43,6 @@ Do not output anything else.
         input = board
     }
 
-    print(request)
     local json = usagi.to_json(request)
 
     return json
@@ -76,7 +74,6 @@ end
 
 function M.parse_move(json)
     local content = nil
-    print(json)
     for i = 1, #(json.output) do
         local output = json.output[i]
         if output.type == "message" then
@@ -96,9 +93,6 @@ function M.parse_move(json)
         y = tonumber(text_split[3]),
     }
 
-    print("Move:")
-    print(content.text)
-
     return move
 end
 
@@ -108,7 +102,7 @@ function M:move(on_move, cells)
 
     local url ="https://api.openai.com/v1/responses"
     local key = os.getenv("OPENAI_API_KEY")
-    http.get(url, key, json, function(res)
+    http.get(url, key, json, {}, function(res)
         local move = M.parse_move(res)
         on_move(move)
     end)

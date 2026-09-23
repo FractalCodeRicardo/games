@@ -51,7 +51,7 @@ local function get_description_turn()
     local current_player = State.current_player
 
     if current_player ~= nil then
-        return current_player.name .. " " .. " is moving."
+        return current_player.name .. " " .. "is moving."
     end
 
     return ""

@@ -5,8 +5,9 @@ local Footer = require("footer")
 local Score = require("score")
 local Menu = require("menu")
 local Timer = require("timer")
-local AI = require("move_modes.ai")
+local AI = require("move_modes.openai")
 local JEV = require("move_modes.jev")
+local CLAUDE = require("move_modes.claude")
 
 local SIZE = Constants.BOARD_SIZE;
 local CELL_SIZE = Constants.CELL_SIZE;
@@ -77,12 +78,40 @@ local function openAI_vs_jev_players()
     return { p1, p2 }
 end
 
+
+local function gpt_vs_jev()
+    local y = math.floor(SIZE / 2)
+    local x = math.floor(SIZE / 2)
+    local claude = CLAUDE:new()
+    local jev = JEV:new()
+    local p1 = Player:new("Claude", x - 1, y - 1, 1, {
+        mode = claude
+    })
+    local p2 = Player:new("Jev", x + 1, y + 1, 9, {
+        mode = jev
+    })
+    return { p1, p2 }
+end
+
+
+local function keyboard_vs_claude()
+    local y = math.floor(SIZE / 2)
+    local x = math.floor(SIZE / 2)
+    local claude = CLAUDE:new()
+    local p1 = Player:new("Ricardo", x - 1, y - 1, 1)
+    local p2 = Player:new("Claude", x + 1, y + 1, 9, {mode = claude})
+
+    return { p1, p2 }
+end
+
 function _init()
     local board = Board:new()
 
     -- local players = keyboard_players()
     -- local players = openAI_players()
-    local players = openAI_vs_jev_players()
+    -- local players = openAI_vs_jev_players()
+    -- local players = keyboard_vs_claude()
+    local players = gpt_vs_jev()
 
     Menu.on_start = function()
         State.state = "game"
@@ -145,8 +174,6 @@ local function evaluate_finishing()
         State.game_over = true
         State.winner = board:get_winner()
 
-        -- get_winner() returns nil when the mine-opener is the only
-        -- player with scored cells; in that case the opponent wins.
         if State.winner == nil then
             for _, p in ipairs(State.players) do
                 if p.id ~= scores.player_open_mine then
@@ -205,14 +232,15 @@ local function turn()
 
     Timer.wait()
 
-    print(player.name .. " Moving ")
+    print("---- TURN " .. player.name .. " ----")
     player:move(
         function(move)
 
-            print("Move %s (%i, %i)", move.move, move.x, move.y)
+            print("MOVE:")
+            print(string.format("%s (%i, %i)", move.move, move.x, move.y))
             on_move(move)
             player:move_to(move.x, move.y)
-            Timer.delay(1000)
+            Timer.delay(100)
         end,
         cells
     )
