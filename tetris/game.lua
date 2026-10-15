@@ -7,24 +7,25 @@ M.__index = M
 
 function M.new()
   local game = {}
-  game = setmetatable(game, M)
+  setmetatable(game, M)
   game.piece = piece.new()
-  game.floor = floor:new()
+  game.floor = floor.new()
   game.time = 0
+
   return game
 end
 
 function M:handle_keys()
-  if input.key_pressed(input.KEY_K) then
-    self:rotate()
+  if input.key_pressed(input.KEY_H) then
+    self:left()
   end
 
   if input.key_pressed(input.KEY_L) then
     self:right()
   end
 
-  if input.key_pressed(input.KEY_H) then
-    self:left()
+  if input.key_pressed(input.KEY_K) then
+    self:rotate()
   end
 
   if input.key_pressed(input.KEY_J) then
@@ -37,19 +38,15 @@ function M:rotate()
 end
 
 function M:left()
-  if not self:valid_move(-1, 0) then
-    return
+  if self:valid_move(-1, 0) then
+    self.piece:left()
   end
-
-  self.piece:left()
 end
 
 function M:right()
-  if not self:valid_move(1, 0) then
-    return
+  if self:valid_move(1, 0) then
+    self.piece:right()
   end
-
-  self.piece:right()
 end
 
 function M:down()
@@ -58,7 +55,22 @@ function M:down()
   self.piece:move_to_direction(0, distance_y)
 end
 
-function M:handle_move(dt)
+function M:update(dt)
+  self:handle_crash()
+  self:handle_keys()
+  self:handle_movement(dt)
+end
+
+function M:handle_crash()
+  local squares = self.piece:square_positions()
+
+  if self.floor:is_crash(squares) then
+    self.floor:add_squares(squares)
+    self.piece = piece.new()
+  end
+end
+
+function M:handle_movement(dt)
   if self.time > constants.MOVE_TIME then
     self.floor:remove_complete_lines()
     self.piece:move()
@@ -69,34 +81,12 @@ function M:handle_move(dt)
   self.time += dt
 end
 
-function M:handle_crash()
-  local squares = self.piece:square_positions()
-
-  if self.floor:crash(squares) then
-    self.floor:add_piece(squares)
-    self.piece = piece:new()
-  end
-end
-
-function M:update(dt)
-  self:handle_crash()
-  self:handle_move(dt)
-  self:handle_keys()
-  self.piece:update(dt)
-end
-
-function M:draw(dt)
-  self.piece:draw(dt)
-  self.floor:draw(dt)
-end
-
 function M:valid_move(x, y)
   local positions = self.piece:square_positions()
-  for _, p in pairs(positions) do
-    p.x += x
-    p.y += y
-
-    if not self:valid_pos(p) then
+  for _, pos in ipairs(positions) do
+    pos.x += x
+    pos.y += y
+    if not self:valid_pos(pos) then
       return false
     end
   end
@@ -116,13 +106,20 @@ function M:valid_pos(pos)
     return false
   end
 
-  for _, s in pairs(self.floor.squares) do
-    if pos.x == s.x and pos.y == s.y then
+  local csquares = self.floor.squares
+
+  for _, s in ipairs(csquares) do
+    if s.x == pos.x and s.y == pos.y then
       return false
     end
   end
 
   return true
+end
+
+function M:draw()
+  self.piece:draw()
+  self.floor:draw()
 end
 
 return M

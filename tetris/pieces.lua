@@ -1,4 +1,4 @@
-local M = {}
+local M  = {}
 
 local squares = {
   {
@@ -39,7 +39,7 @@ local squares = {
   },
 }
 
-function M.random()
+M.random = function ()
   return squares[math.random(#squares)]
 end
 
