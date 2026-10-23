@@ -1,5 +1,6 @@
 local constants = require("constants")
 local pieces = require("pieces")
+local draw = require("draw")
 
 local M = {}
 M.__index = M
@@ -63,24 +64,8 @@ end
 function M:draw()
   local size = constants.SQUARE_SIZE
   self:each_square(function(x, y)
+    draw.square(x,y, self.color)
 
-    gfx.rect_fill(
-      x * size,
-      y * size,
-      size,
-      size,
-      self.color
-    )
-
-
-    gfx.rect_ex(
-      x * size,
-      y * size,
-      size,
-      size,
-      0.5,
-     gfx.COLOR_WHITE
-    )
   end)
 end
   

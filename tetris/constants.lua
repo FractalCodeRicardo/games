@@ -7,12 +7,19 @@ M.BOARD_SIZE = {
   h = 16
 }
 
+M.BOARD_POS = {
+  x = M.SQUARE_SIZE + 5,
+  y = M.SQUARE_SIZE + 5
+}
+
 function M.screen_height()
-  return M.BOARD_SIZE.h * M.SQUARE_SIZE;
+  local margin = M.SQUARE_SIZE * 5;
+  return M.BOARD_SIZE.h * M.SQUARE_SIZE + margin; -- include the border
 end
 
 function M.screen_width()
-  return M.BOARD_SIZE.w * M.SQUARE_SIZE;
+  local margin = M.SQUARE_SIZE * 5;
+  return M.BOARD_SIZE.w * M.SQUARE_SIZE + margin;
 end
 
 
