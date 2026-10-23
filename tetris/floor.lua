@@ -1,4 +1,5 @@
 local constants = require("constants")
+local draw = require("draw")
 local M = {}
 M.__index = M
 
@@ -140,25 +141,8 @@ function M:bottom_distance(squares)
 end
 
 function M:draw()
-  local size = constants.SQUARE_SIZE
-
   for _, s in pairs(self.squares) do
-    gfx.rect_fill(
-      s.x * size,
-      s.y * size,
-      size,
-      size,
-      gfx.COLOR_BROWN
-    )
-
-    gfx.rect_ex(
-      s.x * size,
-      s.y * size,
-      size,
-      size,
-      0.5,
-     gfx.COLOR_WHITE
-    )
+    draw.square(s.x, s.y, gfx.COLOR_BROWN)
   end
 
 end

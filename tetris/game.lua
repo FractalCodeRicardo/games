@@ -1,5 +1,7 @@
 local piece = require("piece")
 local floor = require("floor")
+local wall = require("wall")
+local score = require("score")
 local constants = require("constants")
 
 local M = {}
@@ -10,6 +12,8 @@ function M.new()
   setmetatable(game, M)
   game.piece = piece.new()
   game.floor = floor.new()
+  game.wall = wall.new()
+  game.score = score.new()
   game.time = 0
 
   return game
@@ -118,6 +122,7 @@ function M:valid_pos(pos)
 end
 
 function M:draw()
+  self.wall:draw()
   self.piece:draw()
   self.floor:draw()
 end
