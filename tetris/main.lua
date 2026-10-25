@@ -2,12 +2,12 @@ local constants = require("constants")
 local game = require("game")
 function _init()
   State = {
-    game = game.new()
+    game = game.new({ pos = { x = 30, y = 30 } })
   }
 end
 
 function _config()
-  return  {
+  return {
     game_id = "usagi.tetris",
     game_height = constants.screen_height(),
     game_width = constants.screen_width()

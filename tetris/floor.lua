@@ -4,10 +4,11 @@ local M = {}
 M.__index = M
 
 
-function M.new()
+function M.new(config)
   local floor = {}
   setmetatable(floor, M)
-  
+ 
+  floor.config =config 
   floor.squares = {}
   return floor
 end
@@ -141,8 +142,10 @@ function M:bottom_distance(squares)
 end
 
 function M:draw()
+  local b_pos = self.config.pos
   for _, s in pairs(self.squares) do
-    draw.square(s.x, s.y, gfx.COLOR_BROWN)
+    local pos = { x = s.x, y = s.y }
+    draw.square(b_pos, pos, gfx.COLOR_BROWN)
   end
 
 end

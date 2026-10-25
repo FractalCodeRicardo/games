@@ -2,11 +2,12 @@ local M = {}
 M.__index = M
 
 
-function M.new()
+function M.new(config)
   local score = {}
   setmetatable(score, M)
 
   score.value = 0
+  score.config = config
 
   return score
 end

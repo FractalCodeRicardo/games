@@ -7,13 +7,14 @@ local constants = require("constants")
 local M = {}
 M.__index = M
 
-function M.new()
+function M.new(config)
   local game = {}
   setmetatable(game, M)
-  game.piece = piece.new()
-  game.floor = floor.new()
-  game.wall = wall.new()
-  game.score = score.new()
+  game.config = config
+  game.piece = piece.new(config)
+  game.floor = floor.new(config)
+  game.wall = wall.new(config)
+  game.score = score.new(config)
   game.time = 0
 
   return game
@@ -70,7 +71,7 @@ function M:handle_crash()
 
   if self.floor:is_crash(squares) then
     self.floor:add_squares(squares)
-    self.piece = piece.new()
+    self.piece = piece.new(self.config)
   end
 end
 
