@@ -6,26 +6,27 @@ local M = {}
 M.__index = M
 
 
-function M.new()
+function M.new(config)
   local piece = {}
   setmetatable(piece, M)
+  piece.config = config
   piece.squares = M.random_squares()
   piece.color = M.random_colors()
-  piece.pos = {x = 0, y =0}
+  piece.pos = { x = 0, y = 0 }
   return piece
 end
 
 function M.random_colors()
- local colors = {
-   gfx.COLOR_GREEN,
-   gfx.COLOR_YELLOW,
-   gfx.COLOR_BLUE,
-   gfx.COLOR_ORANGE,
-   gfx.COLOR_PINK,
-   gfx.COLOR_RED,
- }
+  local colors = {
+    gfx.COLOR_GREEN,
+    gfx.COLOR_YELLOW,
+    gfx.COLOR_BLUE,
+    gfx.COLOR_ORANGE,
+    gfx.COLOR_PINK,
+    gfx.COLOR_RED,
+  }
 
- return colors[math.random(#colors)]
+  return colors[math.random(#colors)]
 end
 
 function M.random_squares()
@@ -34,9 +35,9 @@ end
 
 function M:rotate()
   local rotated_indexes = {
-    7,4,1,
-    8,5,2,
-    9,6,3,
+    7, 4, 1,
+    8, 5, 2,
+    9, 6, 3,
   }
 
   local rotated_squares = {}
@@ -51,25 +52,25 @@ end
 function M:each_square(callback)
   for index, s in pairs(self.squares) do
     local i = index - 1
-    local sy = math.floor(i / 3) 
+    local sy = math.floor(i / 3)
     local sx = i - (sy * 3)
 
     if s == 1 then
       callback(self.pos.x + sx, self.pos.y + sy)
     end
-
   end
 end
 
 function M:draw()
   local size = constants.SQUARE_SIZE
+  local b_pos = self.config.pos
   self:each_square(function(x, y)
-    draw.square(x,y, self.color)
-
+    local pos = { x = x, y = y }
+    draw.square(b_pos, pos, self.color)
   end)
 end
-  
-function M:move_to_direction(x,y)
+
+function M:move_to_direction(x, y)
   self.pos.x += x
   self.pos.y += y
 end
@@ -86,28 +87,14 @@ function M:left()
   self:move_to_direction(-1, 0)
 end
 
-
 function M:square_positions()
   local positions = {}
 
-  self:each_square(function (x, y)
-    table.insert(positions, {x = x, y = y})
+  self:each_square(function(x, y)
+    table.insert(positions, { x = x, y = y })
   end)
 
   return positions
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 return M

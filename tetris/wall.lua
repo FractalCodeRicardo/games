@@ -4,9 +4,10 @@ local M = {}
 M.__index = M
 
 
-function M.new()
+function M.new(config)
   local wall = {}
   setmetatable(wall, M)
+  wall.config = config
   
   return wall
 end
@@ -19,8 +20,7 @@ function M:draw()
   local p1 = { x = -1, y = 0}
   local p2 = { x = w , y = h }
   local color = gfx.COLOR_LIGHT_GRAY
-
-  draw.rect(p1, p2, color)
+  draw.rect(self.config.pos, p1, p2, color)
 
 end
 

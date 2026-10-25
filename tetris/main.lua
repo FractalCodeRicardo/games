@@ -1,13 +1,17 @@
 local constants = require("constants")
 local game = require("game")
+local openai = require("openai")
+local http = require("http")
+
 function _init()
   State = {
-    game = game.new()
+    game = game.new({ pos = { x = 30, y = 30 } })
+    -- game = game.new({ pos = { x = 30, y = 30 } }, openai:new())
   }
 end
 
 function _config()
-  return  {
+  return {
     game_id = "usagi.tetris",
     game_height = constants.screen_height(),
     game_width = constants.screen_width()
@@ -15,6 +19,7 @@ function _config()
 end
 
 function _update(dt)
+  http.update()
   State.game:update(dt)
 end
 
