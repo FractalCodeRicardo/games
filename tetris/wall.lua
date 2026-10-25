@@ -20,8 +20,6 @@ function M:draw()
   local p1 = { x = -1, y = 0}
   local p2 = { x = w , y = h }
   local color = gfx.COLOR_LIGHT_GRAY
-  
-  print(usagi.dump(self.config.pos))
   draw.rect(self.config.pos, p1, p2, color)
 
 end

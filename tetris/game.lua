@@ -3,11 +3,12 @@ local floor = require("floor")
 local wall = require("wall")
 local score = require("score")
 local constants = require("constants")
+local keyboard_mode = require("keyboard_mode")
 
 local M = {}
 M.__index = M
 
-function M.new(config)
+function M.new(config, mode)
   local game = {}
   setmetatable(game, M)
   game.config = config
@@ -16,24 +17,31 @@ function M.new(config)
   game.wall = wall.new(config)
   game.score = score.new(config)
   game.time = 0
+  game.mode = mode or keyboard_mode:new()
+  game.mode.game = game
+  game.is_moving = false
 
+
+  game.mode:move(game, function(move)
+    game:perform_move(move.move)
+  end)
   return game
 end
 
-function M:handle_keys()
-  if input.key_pressed(input.KEY_H) then
+function M:perform_move(move)
+  if move == "left" then
     self:left()
   end
 
-  if input.key_pressed(input.KEY_L) then
+  if move == "right" then
     self:right()
   end
 
-  if input.key_pressed(input.KEY_K) then
+  if move == "rotate" then
     self:rotate()
   end
 
-  if input.key_pressed(input.KEY_J) then
+  if move == "down" then
     self:down()
   end
 end
@@ -61,9 +69,19 @@ function M:down()
 end
 
 function M:update(dt)
+  if self.is_moving then
+    return
+  end
+
   self:handle_crash()
-  self:handle_keys()
   self:handle_movement(dt)
+  self.mode:update();
+
+  -- self.is_moving = true
+  -- self.mode:move(self, function(move)
+  --   self:perform_move(move.move)
+  --   self.is_moving = false
+  -- end)
 end
 
 function M:handle_crash()
