@@ -17,7 +17,7 @@ function M:draw()
   local w = constants.BOARD_SIZE.w 
   local h = constants.BOARD_SIZE.h 
 
-  local p1 = { x = -1, y = 0}
+  local p1 = { x = -1, y = -1}
   local p2 = { x = w , y = h }
   local color = gfx.COLOR_LIGHT_GRAY
   draw.rect(self.config.pos, p1, p2, color)

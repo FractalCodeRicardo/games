@@ -4,6 +4,7 @@ M.__index = M
 function M.new()
   local instance = setmetatable({}, M)
   instance.block_events = true
+  instance.name = "keyboard"
 
   return instance
 end

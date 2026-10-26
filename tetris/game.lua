@@ -4,6 +4,7 @@ local wall = require("wall")
 local score = require("score")
 local constants = require("constants")
 local keyboard_mode = require("keyboard_mode")
+local game_over = require("game_over")
 
 local M = {}
 M.__index = M
@@ -12,19 +13,23 @@ function M.new(config, mode)
   local game = {}
   setmetatable(game, M)
   game.config = config
+  game.config.name = config.name or "Tetris"
   game.piece = piece.new(config)
   game.floor = floor.new(config)
   game.wall = wall.new(config)
   game.score = score.new(config)
   game.time = 0
   game.mode = mode or keyboard_mode:new()
-  game.mode.game = game
+  game.game_over = game_over.new(config)
   game.is_moving = false
+  game.ai_time = 0
 
 
-  game.mode:move(game, function(move)
-    game:perform_move(move.move)
-  end)
+  if game.mode.name == "keyboard" then
+    game.mode:move(game, function(move)
+      game:perform_move(move.move)
+    end)
+  end
   return game
 end
 
@@ -69,19 +74,36 @@ function M:down()
 end
 
 function M:update(dt)
-  if self.is_moving then
+  if self.floor:is_game_over() then
     return
   end
-
   self:handle_crash()
   self:handle_movement(dt)
   self.mode:update();
 
-  -- self.is_moving = true
-  -- self.mode:move(self, function(move)
-  --   self:perform_move(move.move)
-  --   self.is_moving = false
-  -- end)
+  self:ai_move(dt)
+end
+
+function M:ai_move(dt)
+  if self.mode.name == "keyboard" then
+    return
+  end
+
+  if self.is_moving then
+    return
+  end
+
+  if self.ai_time < constants.MOVE_AI_TIME then
+    self.ai_time += dt
+    return
+  end
+
+  self.ai_time = 0
+  self.is_moving = true
+  self.mode:move(self, function(move)
+    self:perform_move(move.move)
+    self.is_moving = false
+  end)
 end
 
 function M:handle_crash()
@@ -95,7 +117,8 @@ end
 
 function M:handle_movement(dt)
   if self.time > constants.MOVE_TIME then
-    self.floor:remove_complete_lines()
+    local count = self.floor:remove_complete_lines()
+    self.score:update_score(count)
     self.piece:move()
     self.time = 0
     return
@@ -141,9 +164,27 @@ function M:valid_pos(pos)
 end
 
 function M:draw()
+  if self.floor:is_game_over() then
+    self.game_over:draw()
+    return
+  end
+
   self.wall:draw()
   self.piece:draw()
   self.floor:draw()
+  self.score:draw()
+  self:draw_title()
 end
 
+function M:draw_title()
+  local w = constants.BOARD_SIZE.w
+  local size = constants.SQUARE_SIZE;
+  local text = self.config.name
+  local tsize = usagi.measure_text(text)
+  local x = self.config.pos.x + (w * size) / 2
+  x = x - tsize / 2
+
+  gfx.text(text, x, 1, gfx.COLOR_YELLOW)
+end
+  
 return M

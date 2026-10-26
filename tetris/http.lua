@@ -1,84 +1,112 @@
 local JSON = require("json")
 local FILE = require("file")
+
 local M = {}
-local res_file = "/tmp/tetris-response.json"
-local done_file = "/tmp/tetris-done"
+M.requests = {}
 
+local request_index = 0
 
-
-local function remove_files()
-    FILE.remove(res_file)
-    FILE.remove(done_file)
+local function response_file(id)
+  return "/tmp/tetris-response-" .. id .. ".json"
 end
 
-M.command = function(url, apikey, body, opts)
-    opts = opts or {}
-    opts.apiKeyHeader = opts.apiKeyHeader or 
-     (string.format('Authorization: Bearer %s' , apikey))
-    
-    if opts.extraHeader == nil then
-        opts.extraHeader = ""
-    else
-        opts.extraHeader = '-H "' .. opts.extraHeader .. '" '
-    end
+local function done_file(id)
+  return "/tmp/tetris-done-" .. id
+end
 
-    local command = string.format(
-        'curl -sS %s ' ..
-        '-H "Content-Type: application/json" ' ..
-        '-H "' .. opts.apiKeyHeader .. '" ' ..
-        opts.extraHeader .. ' ' ..
-        ' -o ' .. res_file .. ' ' ..
-        '-d %q',
-        url,
-        body
-    )
+local function remove_files(id)
+  FILE.remove(response_file(id))
+  FILE.remove(done_file(id))
+end
 
-    command = command .. ' && touch ' .. done_file .. " &"
+local function new_id()
+  request_index = request_index + 1
+  return os.time() .. "-" .. request_index
+end
 
-    return command
+M.command = function(url, apikey, body, opts, id)
+  local r_file = response_file(id)
+  local d_file = done_file(id)
+  local options = {}
+  for k, v in pairs(opts or {}) do
+    options[k] = v
+  end
+
+  options.apiKeyHeader = options.apiKeyHeader or
+      (string.format('Authorization: Bearer %s', apikey))
+
+  if options.extraHeader == nil then
+    options.extraHeader = ""
+  else
+    options.extraHeader = '-H "' .. options.extraHeader .. '" '
+  end
+
+  local command = string.format(
+    'curl -sS %s ' ..
+    '-H "Content-Type: application/json" ' ..
+    '-H "' .. options.apiKeyHeader .. '" ' ..
+    options.extraHeader .. ' ' ..
+    ' -o ' .. r_file .. ' ' ..
+    '-d %q',
+    url,
+    body
+  )
+
+  command = command .. ' && touch ' .. d_file.. " &"
+
+  return command
+end
+
+M.add_request = function(callback)
+  local id = new_id()
+  table.insert(M.requests, { id = id, callback = callback })
+  return id
 end
 
 M.get = function(url, apikey, body, opts, callback)
-    print("GET " .. url)
-    if M.callback ~= nil then
-        error("Only one request peer time for now")
-    end
+  print("GET " .. url)
 
-    remove_files()
-    M.callback = callback
-    local command = M.command(url, apikey, body, opts)
+  local reques_id = M.add_request(callback)
+  local command = M.command(url, apikey, body, opts, reques_id)
 
-    print(command)
-    local result = os.execute(command)
-    if result == nil then
-        error("Error performing the request")
-    end
+  local result = os.execute(command)
+  if result == nil then
+    table.remove(M.requests)
+    error("Error performing the request")
+  end
+
+  return reques_id
+end
+
+M.check_request = function(index)
+  local request = M.requests[index]
+  local d_file = done_file(request.id)
+  local r_file = response_file(request.id)
+
+  if not FILE.exists(d_file) then
+    return
+  end
+
+  table.remove(M.requests, index)
+
+  local content = FILE.read(r_file)
+  local res = JSON.decode(content)
+  remove_files(request.id)
+
+  local ok, err = pcall(request.callback, res)
+  if not ok then
+    error(err)
+  end
+end
+
+M.check_requests = function()
+  for i = #M.requests, 1, -1 do
+    M.check_request(i)
+  end
 end
 
 M.update = function()
-    if M.callback == nil then
-        return
-    end
-
-    if not FILE.exists(done_file) then
-        return
-    end
-
-    local content = FILE.read(res_file)
-    local res = JSON.decode(content)
-
-    local ok, err = pcall(function()
-        M.callback(res)
-    end)
-
-    M.callback = nil
-    remove_files()
-
-    if not ok then
-        error(err)
-    end
+  M.check_requests()
 end
-
-
 
 return M
