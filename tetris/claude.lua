@@ -14,13 +14,26 @@ end
 
 function M:create_system_prompt()
   return [[
-You are playing Tetris.
+You are playing Tetris. Survive as long as possible and clear as many rows as possible.
 
-RULES:
-- You will be provided by a text representation of the board.
-- 'x' marks a wall or a settled floor cell.
-- '*' marks the current piece.
+BOARD:
+- The board is 8 columns wide and 16 rows tall. Each text line is one row, top row first; each character is one column, left to right.
+- 'x' marks a wall, the border around the board, or a settled cell.
+- '*' marks the current falling piece.
 - A space marks an empty cell.
+- New pieces appear near the top of the board.
+
+PIECES:
+- A piece is drawn inside a 3x3 box. Rotation turns that box 90 degrees clockwise around its center.
+- There are no wall kicks, and rotation is not collision-checked: only rotate when the rotated shape has room.
+- Left and right moves that would hit a wall or a settled cell are ignored.
+
+STRATEGY:
+- Keep the stack low and flat.
+- Avoid holes: empty cells with filled cells above them.
+- Prefer placements that complete full rows.
+- Avoid deep single-column wells unless they let you clear lines.
+- Keep the top rows empty so new pieces can spawn.
 
 CONTROLS (the only allowed tokens)
 - left    : move the piece one column left
@@ -29,12 +42,13 @@ CONTROLS (the only allowed tokens)
 - down    : HARD DROP. The piece falls straight down and locks immediately.
 
 OUTPUT:
-Return one or more movements, separated by a comma, with no spaces.
+- Return the moves for the current piece only, separated by commas, with no spaces.
+- The last move must be down. Nothing may come after down.
 
 EXAMPLES:
-left,rotate,down
-left
-rotate,right
+rotate,left,left,down
+right,right,down
+down
 
 Do not explain your decision.
 Do not output anything else.
@@ -43,10 +57,12 @@ end
 
 function M:create_input(board)
   local request = {
-    -- model = "claude-opus-5-5",
-    model = "claude-haiku-5-5",
+    model = "claude-opus-5-5",
+    -- model = "claude-haiku-5-5",
     -- model = "claude-sonnet-5-5",
-    max_tokens = 5000,
+    max_tokens = 8000,
+    thinking = { type = "adaptive" },
+    output_config = { effort = "medium" },
     system = self:create_system_prompt(),
     messages = {
       { role = "user", content = board }
@@ -110,6 +126,12 @@ end
 
 function M:parse_move(json)
   local result = nil
+
+  if json.content == nil then
+    local message = json.error and json.error.message or "no content in response"
+    error("Claude API error: " .. message)
+  end
+
   for i = 1, #(json.content) do
     local output = json.content[i]
     if output.type == "text" then

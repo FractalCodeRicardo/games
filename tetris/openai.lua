@@ -14,17 +14,31 @@ end
 
 function M:create_input(board)
   local request = {
-    model = "gpt-6-luna",
-    reasoning = { effort = "low" },
+    -- model = "gpt-6-luna",
+    model = "gpt-6.1-sol",
+    reasoning = { effort = "medium" },
     service_tier = "fast",
     instructions = [[
-You are playing Tetris.
+You are playing Tetris. Survive as long as possible and clear as many rows as possible.
 
-RULES:
-- You will be provided by a text representation of the board.
-- 'x' marks a wall or a settled floor cell.
-- '*' marks the current piece.
+BOARD:
+- The board is 8 columns wide and 16 rows tall. Each text line is one row, top row first; each character is one column, left to right.
+- 'x' marks a wall, the border around the board, or a settled cell.
+- '*' marks the current falling piece.
 - A space marks an empty cell.
+- New pieces appear near the top of the board.
+
+PIECES:
+- A piece is drawn inside a 3x3 box. Rotation turns that box 90 degrees clockwise around its center.
+- There are no wall kicks, and rotation is not collision-checked: only rotate when the rotated shape has room.
+- Left and right moves that would hit a wall or a settled cell are ignored.
+
+STRATEGY:
+- Keep the stack low and flat.
+- Avoid holes: empty cells with filled cells above them.
+- Prefer placements that complete full rows.
+- Avoid deep single-column wells unless they let you clear lines.
+- Keep the top rows empty so new pieces can spawn.
 
 CONTROLS (the only allowed tokens)
 - left    : move the piece one column left
@@ -33,16 +47,13 @@ CONTROLS (the only allowed tokens)
 - down    : HARD DROP. The piece falls straight down and locks immediately.
 
 OUTPUT:
-Return one or more movements, separated by a comma:
-left
-right
-rotate
-down
+- Return the moves for the current piece only, separated by commas, with no spaces.
+- The last move must be down. Nothing may come after down.
 
 EXAMPLES:
-left,rotate,down
-left
-rotate,right
+rotate,left,left,down
+right,right,down
+down
 
 Do not explain your decision.
 Do not output anything else.

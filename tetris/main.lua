@@ -9,16 +9,16 @@ function _init()
   local board_h = constants.board_height()
   local openai = game.new({ 
     pos = { x =30 + board_w * 0, y = 30 },
-    name = "Open AI"
+    name = "gpt-6.1-sol"
   }, openai:new())
 
   local claude = game.new({ 
-    name = "Claude",
+    name = "claude-opus-5-5",
     pos = {x = 30+ board_w * 1, y = 30 } 
   }, claude:new())
 
   local keyboard =game.new({ 
-    name = "Human",
+    name = "Stupid human",
     pos = { x = 30 +  board_w * 2, y = 30 }
   }) 
 
