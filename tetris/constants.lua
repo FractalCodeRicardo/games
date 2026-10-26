@@ -1,7 +1,9 @@
 local M = {}
 
 M.SQUARE_SIZE = 15
-M.MOVE_TIME = 0.5
+M.MOVE_TIME = 3
+M.MOVE_AI_TIME = 0.4
+
 M.BOARD_SIZE = {
   w = 8,
   h = 16

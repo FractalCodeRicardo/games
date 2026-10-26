@@ -48,7 +48,6 @@ M.get = function(url, apikey, body, opts, callback)
     M.callback = callback
     local command = M.command(url, apikey, body, opts)
 
-    print(command)
     local result = os.execute(command)
     if result == nil then
         error("Error performing the request")

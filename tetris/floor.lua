@@ -13,40 +13,12 @@ function M.new(config)
   return floor
 end
 
-function M.get_bottom_square(squares)
-  local bottom = squares[1]
-  for _, s in ipairs(squares) do
-    if bottom.y < s.y then
-      bottom = s
-    end
-  end
-
-  return bottom
-end
-
-
 function M:is_crash(squares)
   if #squares == 0 then
     return false
   end
 
-  local bottom = self.get_bottom_square(squares)
-
-  if bottom.y == constants.BOARD_SIZE.h -1 then
-    return true
-  end
-
-  for _, s in ipairs(self.squares) do
-
-    local crash = bottom.y == 
-      s.y - 1 and bottom.x == s.x
-
-    if crash then
-      return true
-    end
-  end
-
-  return false
+  return self:bottom_distance(squares) == 0
 end
 
 function M:add_squares(squares)
@@ -79,11 +51,14 @@ end
 
 function M:remove_complete_lines()
   local lines = self:lines_to_remove()
+  local count = #lines
 
   for _, line in ipairs(lines) do
     self:remove_line(line)
     self:move_bellow(line)
   end
+
+  return count
 end
 
 function M:lines_to_remove()
@@ -107,38 +82,50 @@ function M:lines_to_remove()
   return lines
 end
 
-function M:get_top_floor(x)
-  local top_floor_y = nil
+function M:is_game_over()
+  local count = {}
 
-  for _, s in pairs(self.squares) do
-    if s.x ~= x then
-      goto continue
+  for _, s in ipairs(self.squares) do
+    if count[s.x] == nil then
+      count[s.x] = 1
+    else
+      count[s.x] += 1
     end
 
-    if top_floor_y == nil then
-      top_floor_y = s.y
-      goto continue
+    if count[s.x] == constants.BOARD_SIZE.h then
+      return true
     end
-
-    if s.y < top_floor_y then
-      top_floor_y = s.y
-    end
-
-    ::continue::
   end
 
-  return top_floor_y
+  return false
+end
+
+function M:square_distance(square)
+  local distance = constants.BOARD_SIZE.h - square.y - 1
+
+  for _, s in ipairs(self.squares) do
+    if s.x == square.x and s.y > square.y then
+      local d = s.y - square.y - 1
+      if d < distance then
+        distance = d
+      end
+    end
+  end
+
+  return distance
 end
 
 function M:bottom_distance(squares)
-  local bottom_piece = self.get_bottom_square(squares)
-  local top_floor_y = self:get_top_floor(bottom_piece.x)
-  
-  if top_floor_y == nil then
-    return constants.BOARD_SIZE.h - bottom_piece.y - 1 
+  local distance = constants.BOARD_SIZE.h
+
+  for _, s in ipairs(squares) do
+    local d = self:square_distance(s)
+    if d < distance then
+      distance = d
+    end
   end
-  
-  return top_floor_y - bottom_piece.y - 1
+
+  return distance
 end
 
 function M:draw()

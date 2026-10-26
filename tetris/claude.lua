@@ -6,7 +6,8 @@ M.__index = M
 function M.new()
     local instance = setmetatable({}, M)
     instance.on_move = nil
-    return instance
+    instance.name = "claude"
+    return instance 
 end
 
 function M:create_system_prompt()

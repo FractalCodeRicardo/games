@@ -1,3 +1,4 @@
+local constants = require("constants")
 local M = {}
 M.__index = M
 
@@ -12,16 +13,17 @@ function M.new(config)
   return score
 end
 
-function M:get_value()
-  return self.value
+
+function M:update_score(count)
+  self.value += count
 end
 
-function M:set_value(value)
-  self.value = value
-end
+function M:draw()
+  local x = self.config.pos.x
+  local y = self.config.pos.y
+    + (constants.BOARD_SIZE.h + 1) * constants.SQUARE_SIZE + 5
 
-function M:add_value(value)
-  self.value = self.value + value
+  gfx.text("SCORE: " .. self.value, x, y, gfx.COLOR_WHITE)
 end
 
 return M
