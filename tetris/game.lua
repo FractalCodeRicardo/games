@@ -13,6 +13,7 @@ function M.new(config, mode)
   local game = {}
   setmetatable(game, M)
   game.config = config
+  game.config.name = config.name or "Tetris"
   game.piece = piece.new(config)
   game.floor = floor.new(config)
   game.wall = wall.new(config)
@@ -172,6 +173,18 @@ function M:draw()
   self.piece:draw()
   self.floor:draw()
   self.score:draw()
+  self:draw_title()
 end
 
+function M:draw_title()
+  local w = constants.BOARD_SIZE.w
+  local size = constants.SQUARE_SIZE;
+  local text = self.config.name
+  local tsize = usagi.measure_text(text)
+  local x = self.config.pos.x + (w * size) / 2
+  x = x - tsize / 2
+
+  gfx.text(text, x, 1, gfx.COLOR_YELLOW)
+end
+  
 return M

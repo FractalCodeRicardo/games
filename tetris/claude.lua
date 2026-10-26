@@ -110,7 +110,6 @@ end
 
 function M:parse_move(json)
   local result = nil
-  print(usagi.dump(json))
   for i = 1, #(json.content) do
     local output = json.content[i]
     if output.type == "text" then

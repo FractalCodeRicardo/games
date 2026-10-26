@@ -14,12 +14,12 @@ M.BOARD_POS = {
   y = M.SQUARE_SIZE + 5
 }
 
-function M.screen_height()
+function M.board_height()
   local margin = M.SQUARE_SIZE * 5;
   return M.BOARD_SIZE.h * M.SQUARE_SIZE + margin; -- include the border
 end
 
-function M.screen_width()
+function M.board_width()
   local margin = M.SQUARE_SIZE * 5;
   return M.BOARD_SIZE.w * M.SQUARE_SIZE + margin;
 end

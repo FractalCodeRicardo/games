@@ -15,6 +15,8 @@ end
 function M:create_input(board)
   local request = {
     model = "gpt-6-luna",
+    reasoning = { effort = "low" },
+    service_tier = "fast",
     instructions = [[
 You are playing Tetris.
 
